@@ -64,6 +64,9 @@ test("buildWrappedRecap creates a personalized recap", () => {
 test("renderHtmlReport creates the local report page", () => {
   const html = renderHtmlReport(audit);
   assert.match(html, /<!doctype html>/);
+  assert.match(html, /YOUR AI WRAPPED/);
+  assert.match(html, /Download your card/);
+  assert.match(html, /Copy LinkedIn post/);
   assert.match(html, /LinkedIn-ready recap/);
   assert.match(html, /AI Practice Score/);
   assert.match(html, /No prompts, code, secrets/);
