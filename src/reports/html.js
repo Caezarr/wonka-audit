@@ -86,7 +86,7 @@ export function renderHtmlReport(audit) {
         <button class="share-button black" type="button" data-copy-post>Copy LinkedIn post</button>
         <a class="share-button blue" href="https://www.linkedin.com/feed/" target="_blank" rel="noreferrer">Open LinkedIn</a>
         <button class="share-button green" type="button" data-copy-card>Copy card text</button>
-        <button class="share-button soft" type="button" data-download-card>Download your card</button>
+        <a class="share-button soft" href="wonka-ai-wrapped-card.svg" download>Download your card</a>
         <p class="share-note">No upload. Everything stays in this local file.</p>
       </aside>
 
@@ -577,17 +577,6 @@ document.querySelector("[data-copy-post]")?.addEventListener("click", async (eve
 document.querySelector("[data-copy-card]")?.addEventListener("click", async (event) => {
   await copyText(document.querySelector("#wrapped-card")?.innerText || "");
   event.currentTarget.textContent = "Card copied";
-});
-document.querySelector("[data-download-card]")?.addEventListener("click", () => {
-  const card = document.querySelector("#wrapped-card")?.outerHTML || "";
-  const html = "<!doctype html><meta charset='utf-8'><title>Wonka AI Wrapped Card</title><style>" + document.querySelector("style").textContent + "</style>" + card;
-  const blob = new Blob([html], { type: "text/html" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = "wonka-ai-wrapped-card.html";
-  link.click();
-  URL.revokeObjectURL(url);
 });
 `;
 }

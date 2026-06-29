@@ -15,6 +15,7 @@ import { renderMarkdownReport } from "./reports/markdown.js";
 import { writePdfReport } from "./reports/pdf.js";
 import { renderLinkedInPost } from "./reports/linkedin.js";
 import { renderHtmlReport } from "./reports/html.js";
+import { renderWrappedCardSvg } from "./reports/card-svg.js";
 import { loadAudit, renderComparisonReport } from "./reports/compare.js";
 
 async function main() {
@@ -111,14 +112,17 @@ async function main() {
   const htmlPath = resolve(outDir, "index.html");
   const markdownPath = resolve(outDir, "wonka-ai-audit-report.md");
   const pdfPath = resolve(outDir, "wonka-ai-usage-audit.pdf");
+  const cardPath = resolve(outDir, "wonka-ai-wrapped-card.svg");
   const linkedinPath = resolve(outDir, "linkedin-post.txt");
   writeFileSync(jsonPath, JSON.stringify(audit, null, 2));
   writeFileSync(htmlPath, renderHtmlReport(audit));
   writeFileSync(markdownPath, renderMarkdownReport(audit));
+  writeFileSync(cardPath, renderWrappedCardSvg(audit));
   writeFileSync(linkedinPath, renderLinkedInPost(audit));
   writePdfReport(audit, pdfPath);
   console.log("");
   console.log(`Local page: ${htmlPath}`);
+  console.log(`Wrapped card: ${cardPath}`);
   console.log(`PDF ready: ${pdfPath}`);
   console.log(`LinkedIn draft: ${linkedinPath}`);
   console.log(`Data export: ${jsonPath}`);

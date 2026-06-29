@@ -32,6 +32,7 @@ run("Employee PDF generation", "python3", [
 
 fileCheck("Aggregate JSON exists", "out/wonka-ai-audit-report.json", 100);
 fileCheck("Local HTML recap exists", "out/index.html", 1000);
+fileCheck("Wrapped share card exists", "out/wonka-ai-wrapped-card.svg", 1000);
 fileCheck("LinkedIn draft exists", "out/linkedin-post.txt", 100);
 fileCheck("Employee PDF exists", "output/pdf/wonka-ai-usage-audit-premium-report.pdf", 1000);
 fileCheck("Go-live runbook exists", "GO-LIVE.md", 100);
