@@ -6,13 +6,12 @@ This package is source-available for review and client-side execution. It is not
 open source.
 
 Permission is granted to install and run the published npm package for local AI
-usage audits. Redistribution, resale, white-label use, hosted service use,
-commercial embedding, or modification for third-party delivery requires a
-separate written agreement with Wonka.
+usage audits. Redistribution, resale, hosted service use, commercial embedding,
+or modification for third-party delivery requires a separate written agreement
+with Wonka.
 
 No warranty is provided. The software is provided "as is", without warranty of
 any kind, express or implied, including but not limited to merchantability,
 fitness for a particular purpose, and noninfringement.
 
-For commercial licensing, white-label use, or consulting-firm distribution,
-contact Wonka.
+For commercial licensing, contact Wonka.

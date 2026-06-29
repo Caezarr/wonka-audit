@@ -24,7 +24,7 @@ npm run audit:local
 npm test
 npm run pack:check
 npm pack --cache /private/tmp/wonka-npm-cache
-npx --yes ./wonka-audit-0.1.4.tgz --out ./tmp/package-smoke
+npx --yes ./wonka-audit-0.1.5.tgz --out ./tmp/package-smoke
 ```
 
 Check that the dry-run package does not include:
@@ -52,9 +52,9 @@ For this repository, after editing and validating:
 git status
 git add .
 git commit -m "chore: prepare npm release"
-git tag -a v0.1.4 -m "v0.1.4"
+git tag -a v0.1.5 -m "v0.1.5"
 git push origin main
-git push origin v0.1.4
+git push origin v0.1.5
 npm publish
 ```
 

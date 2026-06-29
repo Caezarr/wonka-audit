@@ -247,20 +247,6 @@ https://github.com/Caezarr/wonka-audit
 - Git correlation is intentionally basic and local.
 - The report is strongest when run over a meaningful activity window.
 
-## White-Label Roadmap
-
-The current package is Wonka-branded. The engine is intended to support white-label editions for consulting firms.
-
-White-label requirements:
-
-- brand strings moved into configuration;
-- PDF colors and footer configurable;
-- package name scoped per partner;
-- partner license text;
-- local-first privacy model preserved.
-
-See [WHITE-LABEL.md](./WHITE-LABEL.md).
-
 ## Security Notes
 
 See [SECURITY-CISO.md](./SECURITY-CISO.md).
