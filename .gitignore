@@ -1,0 +1,8 @@
+out/
+output/
+tmp/
+node_modules/
+.DS_Store
+*.tgz
+__pycache__/
+*.pyc

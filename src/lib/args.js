@@ -1,0 +1,74 @@
+export function parseArgs(argv) {
+  const args = {
+    preview: false,
+    local: false,
+    upload: false,
+    includeExamples: false,
+    noContent: false,
+    explainPrivacy: false,
+    compare: null,
+    org: "local",
+    team: null,
+    period: "baseline",
+    trainingDate: null,
+    since: null,
+    until: null,
+    out: null,
+    outProvided: false
+  };
+
+  for (let i = 0; i < argv.length; i += 1) {
+    const arg = argv[i];
+    if (arg === "--help" || arg === "-h") args.help = true;
+    else if (arg === "--preview") args.preview = true;
+    else if (arg === "--local") args.local = true;
+    else if (arg === "--upload") args.upload = true;
+    else if (arg === "--compare") args.compare = [argv[++i], argv[++i]].filter(Boolean);
+    else if (arg === "--include-examples") args.includeExamples = true;
+    else if (arg === "--no-content") args.noContent = true;
+    else if (arg === "--explain-privacy") args.explainPrivacy = true;
+    else if (arg === "--org") args.org = argv[++i] ?? args.org;
+    else if (arg === "--team") args.team = argv[++i] ?? null;
+    else if (arg === "--period") args.period = argv[++i] ?? args.period;
+    else if (arg === "--training-date") args.trainingDate = argv[++i] ?? null;
+    else if (arg === "--since") args.since = argv[++i] ?? null;
+    else if (arg === "--until") args.until = argv[++i] ?? null;
+    else if (arg === "--out") {
+      args.out = argv[++i] ?? args.out;
+      args.outProvided = true;
+    }
+    else throw new Error(`Unknown argument: ${arg}`);
+  }
+
+  return args;
+}
+
+export function printHelp() {
+  console.log(`Wonka AI Usage Audit
+
+Usage:
+  npx wonka-audit
+  npx wonka-audit --preview
+  npx wonka-audit --explain-privacy
+  npx wonka-audit --out ./wonka-audit
+  npx wonka-audit --local --since 2026-06-01 --until 2026-06-30 --out ./wonka-audit
+  npx wonka-audit --compare baseline.json checkpoint.json --out ./wonka-audit
+
+Options:
+  no arguments           Generate a local PDF on your Desktop
+  --preview              Show detected sources without full reporting
+  --local                Generate local PDF + JSON + Markdown report
+  --upload               Not implemented; this MVP is local-only
+  --explain-privacy      Explain local reads, outputs and network behavior
+  --compare <a> <b>      Compare two audit JSON exports
+  --org <slug>           Client slug, default: local
+  --team <slug>          Optional team slug
+  --period <label>       Optional report label, default: baseline
+  --training-date <date> Optional date used to derive a collection window
+  --since <date>         Explicit window start
+  --until <date>         Explicit window end
+  --include-examples     Reserved for redacted examples
+  --no-content           Keep content disabled, default behavior
+  --out <path>           Output directory, default: Desktop/Wonka AI Audit
+`);
+}

@@ -1,0 +1,108 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-06-22T12:00:00.000Z",
+  "org_slug": "acme",
+  "team_slug": "engineering",
+  "period": "m1",
+  "training_date": "2026-06-01",
+  "collection_window": {
+    "start": "2026-06-01T00:00:00.000Z",
+    "end": "2026-06-30T23:59:59.999Z"
+  },
+  "privacy": {
+    "content_uploaded": false,
+    "examples_included": false,
+    "hashing": "sha256_with_org_salt"
+  },
+  "source_coverage": {
+    "claude_code": {
+      "status": "ready",
+      "sessions_detected": 42
+    },
+    "cursor": {
+      "status": "ready",
+      "sessions_detected": 67
+    },
+    "codex": {
+      "status": "ready",
+      "sessions_detected": 18
+    },
+    "git": {
+      "status": "ready",
+      "repos_detected": 8
+    }
+  },
+  "metrics": {
+    "adoption": {
+      "weekly_active_users": 12,
+      "trained_to_active_rate": 0.63,
+      "active_days_per_user": 7.4,
+      "sessions_per_active_user": 10.6,
+      "power_user_concentration": 0.31
+    },
+    "business_usage": {
+      "project_bound_session_rate": 0.72,
+      "file_context_rate": 0.48,
+      "repo_context_rate": 0.61,
+      "business_context_rate": 0.44,
+      "advanced_workflow_rate": 0.36,
+      "task_category_mix": {
+        "debugging": 0.24,
+        "code_generation": 0.21,
+        "testing": 0.16,
+        "documentation": 0.12,
+        "code_review": 0.11,
+        "planning": 0.09,
+        "other": 0.07
+      }
+    },
+    "interaction_quality": {
+      "vague_prompt_rate": 0.22,
+      "contextualized_prompt_rate": 0.57,
+      "constraint_rate": 0.41,
+      "correction_rate": 0.18,
+      "abandoned_session_rate": 0.14,
+      "iteration_count_avg": 4.2
+    },
+    "verifiable_impact": {
+      "tool_action_rate": 0.69,
+      "test_run_rate": 0.28,
+      "validation_rate": 0.34,
+      "commit_after_ai_rate": 0.26,
+      "review_workflow_rate": 0.17
+    },
+    "fair_usage": {
+      "tokens_per_action": 18400,
+      "tokens_per_validated_session": 31100,
+      "long_session_without_action_rate": 0.08,
+      "premium_model_simple_task_rate": 0.19,
+      "cache_reuse_rate": 0.27
+    }
+  },
+  "score": {
+    "ai_practice_score": 68,
+    "dimensions": {
+      "adoption_durable": 71,
+      "usage_metier_reel": 66,
+      "qualite_interaction": 64,
+      "impact_verifiable": 62,
+      "usage_juste": 78
+    },
+    "interpretation": "The team shows healthy post-training adoption, with strong project-bound usage. The main opportunity is to increase validation/test workflows after AI-assisted work."
+  },
+  "recommendations": [
+    {
+      "title": "Reinforce validation habits",
+      "body": "Only 34% of sessions end with a validation signal. Run a follow-up workshop on test, lint and review loops."
+    },
+    {
+      "title": "Standardize high-quality prompts",
+      "body": "Contextualized prompts improved, but 22% remain vague. Provide 3 reusable team templates."
+    },
+    {
+      "title": "Reduce premium model use on simple tasks",
+      "body": "19% of simple tasks appear to use premium models. Add guidance for model/tool selection."
+    }
+  ]
+}
+

@@ -1,0 +1,51 @@
+{
+  "name": "wonka-audit",
+  "version": "0.1.2",
+  "private": false,
+  "description": "Local AI usage audit CLI for Claude Code, Codex, Cursor and Git.",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Caezarr/wonka-audit.git"
+  },
+  "homepage": "https://github.com/Caezarr/wonka-audit#readme",
+  "bugs": {
+    "url": "https://github.com/Caezarr/wonka-audit/issues"
+  },
+  "bin": {
+    "wonka-audit": "src/cli.js",
+    "wonka-ai-audit": "src/cli.js"
+  },
+  "files": [
+    "src",
+    "README.md",
+    "SECURITY-CISO.md"
+  ],
+  "scripts": {
+    "start": "node src/cli.js",
+    "test": "node --test",
+    "preview": "node src/cli.js --preview",
+    "audit:local": "node src/cli.js --local --out ./out",
+    "compare:demo": "node src/cli.js --compare ./out/baseline/wonka-ai-audit-report.json ./out/checkpoint/wonka-ai-audit-report.json --out ./out/compare",
+    "report:client": "python3 scripts/build_premium_report.py --input out/wonka-ai-audit-report.json --out output/pdf/wonka-ai-usage-audit-premium-report.pdf",
+    "report:technical": "python3 scripts/build_client_report.py --input out/wonka-ai-audit-report.json --base out/baseline/wonka-ai-audit-report.json --current out/checkpoint/wonka-ai-audit-report.json --out output/pdf/wonka-ai-usage-audit-client-report.pdf",
+    "go-live:check": "node scripts/go_live_check.js",
+    "pack:check": "npm pack --dry-run --cache /private/tmp/wonka-npm-cache"
+  },
+  "keywords": [
+    "ai",
+    "audit",
+    "claude",
+    "codex",
+    "cursor",
+    "wonka"
+  ],
+  "author": "Wonka",
+  "license": "UNLICENSED",
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
