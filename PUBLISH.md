@@ -25,7 +25,7 @@ npm run audit:local
 npm test
 npm run pack:check
 npm pack --cache /private/tmp/wonka-npm-cache
-npx --yes ./wonka-audit-0.1.6.tgz --out ./tmp/package-smoke
+npx --yes ./wonka-audit-0.1.7.tgz --out ./tmp/package-smoke
 ```
 
 Check that the dry-run package does not include:
@@ -53,9 +53,9 @@ For this repository, after editing and validating:
 git status
 git add .
 git commit -m "chore: prepare npm release"
-git tag -a v0.1.6 -m "v0.1.6"
+git tag -a v0.1.7 -m "v0.1.7"
 git push origin main
-git push origin v0.1.6
+git push origin v0.1.7
 npm publish
 ```
 
@@ -101,6 +101,7 @@ Expected output:
 
 ```text
 Desktop/Wonka AI Audit/<run-folder>/wonka-ai-usage-audit.pdf
+Desktop/Wonka AI Audit/<run-folder>/index.html
 Desktop/Wonka AI Audit/<run-folder>/wonka-ai-audit-report.json
 Desktop/Wonka AI Audit/<run-folder>/linkedin-post.txt
 ```
@@ -115,8 +116,8 @@ Run this command from your terminal:
 npx wonka-audit
 
 The audit runs locally on your computer. It does not upload prompts, source code,
-secrets or raw conversations. It creates a PDF in a "Wonka AI Audit" folder on
-your Desktop.
+secrets or raw conversations. It creates a local HTML recap and a PDF in a
+"Wonka AI Audit" folder on your Desktop.
 
 Website: https://wonka-ai.com
 Terms: https://wonka-ai.com/cgv

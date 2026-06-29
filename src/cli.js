@@ -14,6 +14,7 @@ import { buildRecommendations } from "./metrics/recommendations.js";
 import { renderMarkdownReport } from "./reports/markdown.js";
 import { writePdfReport } from "./reports/pdf.js";
 import { renderLinkedInPost } from "./reports/linkedin.js";
+import { renderHtmlReport } from "./reports/html.js";
 import { loadAudit, renderComparisonReport } from "./reports/compare.js";
 
 async function main() {
@@ -107,14 +108,17 @@ async function main() {
 
   const outDir = ensureOutputDir(args, window);
   const jsonPath = resolve(outDir, "wonka-ai-audit-report.json");
+  const htmlPath = resolve(outDir, "index.html");
   const markdownPath = resolve(outDir, "wonka-ai-audit-report.md");
   const pdfPath = resolve(outDir, "wonka-ai-usage-audit.pdf");
   const linkedinPath = resolve(outDir, "linkedin-post.txt");
   writeFileSync(jsonPath, JSON.stringify(audit, null, 2));
+  writeFileSync(htmlPath, renderHtmlReport(audit));
   writeFileSync(markdownPath, renderMarkdownReport(audit));
   writeFileSync(linkedinPath, renderLinkedInPost(audit));
   writePdfReport(audit, pdfPath);
   console.log("");
+  console.log(`Local page: ${htmlPath}`);
   console.log(`PDF ready: ${pdfPath}`);
   console.log(`LinkedIn draft: ${linkedinPath}`);
   console.log(`Data export: ${jsonPath}`);

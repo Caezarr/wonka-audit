@@ -28,12 +28,13 @@ The folder contains:
 
 ```text
 wonka-ai-usage-audit.pdf
+index.html
 wonka-ai-audit-report.json
 wonka-ai-audit-report.md
 linkedin-post.txt
 ```
 
-The PDF is the user-friendly report. `linkedin-post.txt` is a short privacy-safe draft the user can copy into LinkedIn if they want to share their AI practice recap. The JSON is useful only if the employee or client explicitly decides to share it with Wonka.
+`index.html` is the local user-friendly recap page. The PDF is the portable report. `linkedin-post.txt` is a short privacy-safe draft the user can copy into LinkedIn if they want to share their AI practice recap. The JSON is useful only if the employee or client explicitly decides to share it with Wonka.
 
 Each run gets its own folder by default, so weekly usage does not overwrite previous reports.
 
@@ -158,6 +159,7 @@ The premium PDF is designed as a coaching recap, not a technical audit.
 
 It shows:
 
+- a local HTML recap page;
 - the user's AI profile;
 - conversations and message volume;
 - top detected tool;
@@ -215,6 +217,7 @@ Desktop/Wonka AI Audit/
     wonka-ai-audit-report.md
   weekly_2026-06-08_to_2026-07-07_2026-07-06-09-12/
     wonka-ai-usage-audit.pdf
+    index.html
     wonka-ai-audit-report.json
     wonka-ai-audit-report.md
     linkedin-post.txt

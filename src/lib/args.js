@@ -59,7 +59,7 @@ Usage:
 Options:
   no arguments           Generate a local PDF on your Desktop
   --preview              Show detected sources without full reporting
-  --local                Generate local PDF + JSON + Markdown report
+  --local                Generate local HTML + PDF + JSON + Markdown report
   --upload               Not implemented; this MVP is local-only
   --explain-privacy      Explain local reads, outputs and network behavior
   --compare <a> <b>      Compare two audit JSON exports
