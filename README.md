@@ -21,7 +21,7 @@ npx wonka-audit
 By default, the CLI creates a local folder on the user's Desktop:
 
 ```text
-Desktop/Wonka AI Audit/
+Desktop/Wonka AI Audit/<run-folder>/
 ```
 
 The folder contains:
@@ -33,6 +33,8 @@ wonka-ai-audit-report.md
 ```
 
 The PDF is the user-friendly report. The JSON is useful only if the employee or client explicitly decides to share it with Wonka.
+
+Each run gets its own folder by default, so weekly usage does not overwrite previous reports.
 
 ## Privacy Model
 
@@ -102,6 +104,14 @@ Choose an output directory:
 
 ```bash
 npx wonka-audit --out ./wonka-audit
+```
+
+When `--out` is provided, the CLI writes directly to that folder.
+
+Create an explicit weekly run folder:
+
+```bash
+npx wonka-audit --period weekly --run-label week-2026-27
 ```
 
 Select a date window:
@@ -192,6 +202,28 @@ npm run pack:check
 
 The package intentionally has no npm runtime dependencies.
 
+## Weekly Run Folder Structure
+
+If a user runs `npx wonka-audit` every week, outputs are organized like this:
+
+```text
+Desktop/Wonka AI Audit/
+  baseline_2026-06-01_to_2026-06-30_2026-06-29-10-45/
+    wonka-ai-usage-audit.pdf
+    wonka-ai-audit-report.json
+    wonka-ai-audit-report.md
+  weekly_2026-06-08_to_2026-07-07_2026-07-06-09-12/
+    wonka-ai-usage-audit.pdf
+    wonka-ai-audit-report.json
+    wonka-ai-audit-report.md
+```
+
+For managed recurring runs, use explicit labels:
+
+```bash
+npx wonka-audit --period weekly --run-label week-2026-27
+```
+
 ## Published Package
 
 Package name:
@@ -214,6 +246,20 @@ https://github.com/Caezarr/wonka-audit
 - Cursor coverage depends on local `sqlite3`.
 - Git correlation is intentionally basic and local.
 - The report is strongest when run over a meaningful activity window.
+
+## White-Label Roadmap
+
+The current package is Wonka-branded. The engine is intended to support white-label editions for consulting firms.
+
+White-label requirements:
+
+- brand strings moved into configuration;
+- PDF colors and footer configurable;
+- package name scoped per partner;
+- partner license text;
+- local-first privacy model preserved.
+
+See [WHITE-LABEL.md](./WHITE-LABEL.md).
 
 ## Security Notes
 

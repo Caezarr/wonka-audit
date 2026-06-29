@@ -24,7 +24,7 @@ npm run audit:local
 npm test
 npm run pack:check
 npm pack --cache /private/tmp/wonka-npm-cache
-npx --yes ./wonka-audit-0.1.3.tgz --out ./tmp/package-smoke
+npx --yes ./wonka-audit-0.1.4.tgz --out ./tmp/package-smoke
 ```
 
 Check that the dry-run package does not include:
@@ -39,8 +39,39 @@ Check that the dry-run package does not include:
 ## Publish
 
 ```bash
-npm login
+npm whoami
+npm version patch --no-git-tag-version # only if package.json was not already bumped
+npm test
+npm run pack:check
 npm publish
+```
+
+For this repository, after editing and validating:
+
+```bash
+git status
+git add .
+git commit -m "chore: prepare npm release"
+git tag -a v0.1.4 -m "v0.1.4"
+git push origin main
+git push origin v0.1.4
+npm publish
+```
+
+Verify:
+
+```bash
+npm view wonka-audit version
+npx wonka-audit --preview
+```
+
+## Login
+
+If `npm whoami` returns `401 Unauthorized`:
+
+```bash
+npm login
+npm whoami
 ```
 
 If the `wonka-audit` package name is unavailable on npm, use a scope:
@@ -68,8 +99,8 @@ npx wonka-audit
 Expected output:
 
 ```text
-Desktop/Wonka AI Audit/wonka-ai-usage-audit.pdf
-Desktop/Wonka AI Audit/wonka-ai-audit-report.json
+Desktop/Wonka AI Audit/<run-folder>/wonka-ai-usage-audit.pdf
+Desktop/Wonka AI Audit/<run-folder>/wonka-ai-audit-report.json
 ```
 
 The PDF is the main employee-facing artifact. The JSON is optional and useful if Wonka needs to consolidate teams or compare the baseline with a 90-day checkpoint.
@@ -96,3 +127,4 @@ Terms: https://wonka-ai.com/cgv
 - The CLI does not upload content by default.
 - Full prompts, assistant answers, source code, secrets and absolute local paths are not included by default.
 - Short prompt/message text may be inspected locally in memory for classification; raw content is not exported by default.
+- Weekly runs create separate timestamped folders by default.

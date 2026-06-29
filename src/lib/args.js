@@ -10,6 +10,7 @@ export function parseArgs(argv) {
     org: "local",
     team: null,
     period: "baseline",
+    runLabel: null,
     trainingDate: null,
     since: null,
     until: null,
@@ -30,6 +31,7 @@ export function parseArgs(argv) {
     else if (arg === "--org") args.org = argv[++i] ?? args.org;
     else if (arg === "--team") args.team = argv[++i] ?? null;
     else if (arg === "--period") args.period = argv[++i] ?? args.period;
+    else if (arg === "--run-label") args.runLabel = argv[++i] ?? null;
     else if (arg === "--training-date") args.trainingDate = argv[++i] ?? null;
     else if (arg === "--since") args.since = argv[++i] ?? null;
     else if (arg === "--until") args.until = argv[++i] ?? null;
@@ -64,6 +66,7 @@ Options:
   --org <slug>           Client slug, default: local
   --team <slug>          Optional team slug
   --period <label>       Optional report label, default: baseline
+  --run-label <label>    Optional folder label for the current run
   --training-date <date> Optional date used to derive a collection window
   --since <date>         Explicit window start
   --until <date>         Explicit window end

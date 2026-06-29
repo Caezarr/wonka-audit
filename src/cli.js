@@ -104,8 +104,7 @@ async function main() {
     recommendations
   };
 
-  const outDir = resolveOutputDir(args);
-  if (!existsSync(outDir)) mkdirSync(outDir, { recursive: true });
+  const outDir = ensureOutputDir(args, window);
   const jsonPath = resolve(outDir, "wonka-ai-audit-report.json");
   const markdownPath = resolve(outDir, "wonka-ai-audit-report.md");
   const pdfPath = resolve(outDir, "wonka-ai-usage-audit.pdf");
@@ -138,16 +137,54 @@ function printPreview({ claude, codex, cursor, git, window }) {
   console.log(`Git:         ${git.status} (${git.commits_in_window || 0} commits in window)`);
 }
 
-function resolveOutputDir(args) {
+function resolveOutputDir(args, window) {
   if (args.out) return resolve(args.out);
   const desktop = join(homedir(), "Desktop");
-  if (existsSync(desktop)) return join(desktop, "Wonka AI Audit");
-  return resolve("Wonka AI Audit");
+  const root = existsSync(desktop) ? join(desktop, "Wonka AI Audit") : resolve("Wonka AI Audit");
+  return join(root, runFolderName(args, window));
+}
+
+function ensureOutputDir(args, window) {
+  const preferred = resolveOutputDir(args, window);
+  try {
+    if (!existsSync(preferred)) mkdirSync(preferred, { recursive: true });
+    return preferred;
+  } catch (error) {
+    if (args.out) throw error;
+    const fallback = resolve("Wonka AI Audit", runFolderName(args, window));
+    if (!existsSync(fallback)) mkdirSync(fallback, { recursive: true });
+    console.log(`Desktop output unavailable; using ${fallback}`);
+    return fallback;
+  }
+}
+
+function runFolderName(args, window) {
+  const label = sanitizePathPart(args.runLabel || args.period || "audit");
+  const start = datePart(window.start);
+  const end = datePart(window.end);
+  const generated = dateTimePart(new Date());
+  return `${label}_${start}_to_${end}_${generated}`;
+}
+
+function sanitizePathPart(value) {
+  return String(value || "audit")
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 60) || "audit";
+}
+
+function datePart(date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function dateTimePart(date) {
+  return date.toISOString().slice(0, 16).replace(/[:T]/g, "-");
 }
 
 function printClientNotice(args) {
   if (args.preview) return;
-  const defaultTarget = args.out ? resolve(args.out) : join(homedir(), "Desktop", "Wonka AI Audit");
+  const defaultTarget = args.out ? resolve(args.out) : join(homedir(), "Desktop", "Wonka AI Audit", "<run-folder>");
   console.log("Wonka AI Usage Audit");
   console.log("Runs locally on this computer. No prompts, source code, secrets or raw conversations are uploaded.");
   console.log("Short prompt snippets may be inspected locally in memory to classify usage quality; they are not exported by default.");

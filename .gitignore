@@ -1,6 +1,7 @@
 out/
 output/
 tmp/
+Wonka AI Audit/
 node_modules/
 .DS_Store
 *.tgz

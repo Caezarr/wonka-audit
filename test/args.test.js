@@ -12,3 +12,9 @@ test("parseArgs reads compare paths", () => {
   assert.deepEqual(args.compare, ["m0.json", "m3.json"]);
   assert.equal(args.out, "out/compare");
 });
+
+test("parseArgs supports run labels", () => {
+  const args = parseArgs(["--period", "weekly", "--run-label", "week-2026-27"]);
+  assert.equal(args.period, "weekly");
+  assert.equal(args.runLabel, "week-2026-27");
+});
