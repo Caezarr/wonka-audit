@@ -13,6 +13,7 @@ The public npm package should contain only:
 - `src/` CLI and collectors;
 - `README.md`;
 - `SECURITY-CISO.md`.
+- `LICENSE`.
 
 It should not publish generated reports, PDFs, local audit outputs, `tmp/`, or Wonka internal PDF assets.
 
@@ -24,7 +25,7 @@ npm run audit:local
 npm test
 npm run pack:check
 npm pack --cache /private/tmp/wonka-npm-cache
-npx --yes ./wonka-audit-0.1.5.tgz --out ./tmp/package-smoke
+npx --yes ./wonka-audit-0.1.6.tgz --out ./tmp/package-smoke
 ```
 
 Check that the dry-run package does not include:
@@ -52,9 +53,9 @@ For this repository, after editing and validating:
 git status
 git add .
 git commit -m "chore: prepare npm release"
-git tag -a v0.1.5 -m "v0.1.5"
+git tag -a v0.1.6 -m "v0.1.6"
 git push origin main
-git push origin v0.1.5
+git push origin v0.1.6
 npm publish
 ```
 
@@ -101,6 +102,7 @@ Expected output:
 ```text
 Desktop/Wonka AI Audit/<run-folder>/wonka-ai-usage-audit.pdf
 Desktop/Wonka AI Audit/<run-folder>/wonka-ai-audit-report.json
+Desktop/Wonka AI Audit/<run-folder>/linkedin-post.txt
 ```
 
 The PDF is the main employee-facing artifact. The JSON is optional and useful if Wonka needs to consolidate teams or compare the baseline with a 90-day checkpoint.

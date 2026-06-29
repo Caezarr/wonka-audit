@@ -30,9 +30,10 @@ The folder contains:
 wonka-ai-usage-audit.pdf
 wonka-ai-audit-report.json
 wonka-ai-audit-report.md
+linkedin-post.txt
 ```
 
-The PDF is the user-friendly report. The JSON is useful only if the employee or client explicitly decides to share it with Wonka.
+The PDF is the user-friendly report. `linkedin-post.txt` is a short privacy-safe draft the user can copy into LinkedIn if they want to share their AI practice recap. The JSON is useful only if the employee or client explicitly decides to share it with Wonka.
 
 Each run gets its own folder by default, so weekly usage does not overwrite previous reports.
 
@@ -216,6 +217,7 @@ Desktop/Wonka AI Audit/
     wonka-ai-usage-audit.pdf
     wonka-ai-audit-report.json
     wonka-ai-audit-report.md
+    linkedin-post.txt
 ```
 
 For managed recurring runs, use explicit labels:
