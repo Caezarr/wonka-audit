@@ -1,224 +1,220 @@
 # Wonka AI Usage Audit
 
-## Objectif
+Local AI usage audit CLI for Claude Code, Codex, Cursor and local Git signals.
 
-Mesurer l'usage reel de l'IA avant les formations Wonka, puis verifier l'amelioration apres les workshops.
+The goal is to create a **pre-training baseline** before Wonka workshops, then run the same audit again after the training cycle to measure whether AI habits improved.
 
-Le produit commence par une baseline pre-formation. Cette baseline sert a calibrer les formations sur les usages reels des personnes en face de nous : outils utilises, types de demandes, niveau de contexte, reflexes de verification, usages libres vs workflows plus avances.
+This is not a token-consumption report. It measures whether people use AI better:
 
-Il ne cherche pas a montrer que les equipes consomment plus de tokens. Il cherche a prouver qu'elles utilisent mieux Claude, Cursor et Codex :
+- more real work context;
+- more files, projects and concrete inputs;
+- fewer vague prompts;
+- more workflow-oriented sessions;
+- more validation before using AI output.
 
-- plus de cas d'usage metier reels ;
-- plus de contexte fourni a l'IA ;
-- plus d'actions verifiables ;
-- moins de conversations vagues ou abandonnees ;
-- meilleur choix d'outil/modele selon la tache.
-
-## Positionnement
-
-> Wonka ne vend pas seulement une formation IA. Wonka mesure le niveau de depart, adapte la formation aux usages reels, puis prouve si les equipes deviennent vraiment meilleures avec l'IA.
-
-Livrable client :
-
-- baseline pre-formation avant ou au moment de la formation ;
-- recap "Wonka Wrapped" sans image obligatoire : conversations, messages, top outil, top usage, usage libre vs workflow, conseils ;
-- nouvelle mesure 3 mois apres les workshops ;
-- recap employes en une page ;
-- actions concretes en une page ;
-- incitation aux workshops Wonka quand l'usage reste fragile ;
-- restitution sponsor avec progression et recommandations de coaching ciblees.
-
-## Produit
-
-Nom de travail :
-
-- Wonka AI Usage Audit
-- Wonka AI Practice Review
-- AI Enablement Score
-
-Commande cible :
+## Install And Run
 
 ```bash
 npx wonka-audit
 ```
 
-Le CLI scanne localement les traces de Claude Code, Cursor et Codex, anonymise les donnees, calcule des KPI, puis cree un PDF sur le Bureau. Un admin ne peut pas lire les donnees locales des utilisateurs via ce CLI. Le partage du PDF/JSON doit rester volontaire. Le premier usage recommande est pre-formation : comprendre les habitudes actuelles avant de construire l'atelier.
-
-## Usage client via npx
-
-Le parcours client minimal :
-
-```bash
-npx wonka-audit
-```
-
-Le client obtient :
-
-- macOS / Windows / Linux : un dossier `Wonka AI Audit` sur le Bureau quand le dossier Desktop existe.
-- PDF principal : `wonka-ai-usage-audit.pdf`
-- Export technique : `wonka-ai-audit-report.json`
-- Export lisible : `wonka-ai-audit-report.md`
-
-Le PDF est le livrable principal pour l'utilisateur. Le JSON peut etre transmis a Wonka si le client veut une restitution consolidee ou une comparaison apres formation.
-
-Communication client recommandee :
+By default, the CLI creates a local folder on the user's Desktop:
 
 ```text
-Run this command from your terminal:
-
-npx wonka-audit
-
-The audit runs locally on your computer. It does not upload prompts, source code,
-secrets or raw conversations. It creates a PDF in a "Wonka AI Audit" folder on
-your Desktop.
-
-Website: https://wonka-ai.com
-Terms: https://wonka-ai.com/cgv
+Desktop/Wonka AI Audit/
 ```
 
-Pour une fenetre precise :
+The folder contains:
+
+```text
+wonka-ai-usage-audit.pdf
+wonka-ai-audit-report.json
+wonka-ai-audit-report.md
+```
+
+The PDF is the user-friendly report. The JSON is useful only if the employee or client explicitly decides to share it with Wonka.
+
+## Privacy Model
+
+`wonka-audit` is local-first.
+
+By default, it does not upload:
+
+- full prompts;
+- assistant responses;
+- source code;
+- secrets;
+- environment variables;
+- raw conversation logs;
+- absolute local paths.
+
+An admin cannot read employee local data through this CLI. Each user runs the audit locally and owns the generated PDF/JSON. Any sharing must be explicit and manual.
+
+To print the privacy model:
 
 ```bash
-npx wonka-audit --since 2026-06-01 --until 2026-06-30
+npx wonka-audit --explain-privacy
 ```
 
-Pour choisir un dossier de sortie :
+## What It Reads
+
+Claude Code:
+
+```text
+~/.claude/projects/*.jsonl
+```
+
+Codex:
+
+```text
+~/.codex/sessions/**/*.jsonl
+```
+
+Cursor:
+
+```text
+Cursor local state database, when available
+```
+
+Git:
+
+```text
+local Git metadata from the current working directory, when available
+```
+
+Cursor support depends on a local `sqlite3` binary. If `sqlite3` is unavailable, Cursor is marked unavailable instead of forcing installation.
+
+## Common Commands
+
+Run the default local audit:
+
+```bash
+npx wonka-audit
+```
+
+Preview detected sources:
+
+```bash
+npx wonka-audit --preview
+```
+
+Choose an output directory:
 
 ```bash
 npx wonka-audit --out ./wonka-audit
 ```
 
-## Cadence de mesure
+Select a date window:
 
-Le dispositif client commence par une baseline pre-formation maintenant, puis relance le meme audit 3 mois apres les formations/workshops.
-
-Comparaison principale :
-
-```text
-post-training 90-day checkpoint vs pre-training baseline
+```bash
+npx wonka-audit --since 2026-06-01 --until 2026-06-30
 ```
 
-## Score
+Compare two local exports:
 
-Score final sur 100 :
+```bash
+npx wonka-audit --compare baseline.json checkpoint.json --out ./wonka-compare
+```
+
+## Score Calibration
+
+Current model: `local_individual_v2`.
+
+The AI Practice Score is calibrated for a local individual baseline across Claude Code, Codex and Cursor.
+
+Scale:
+
+- `40/100`: needs work
+- `70/100`: healthy
+- `90/100`: strong
+
+Dimensions:
 
 ```text
 AI Practice Score =
-  adoption_durable       20 pts
-+ usage_metier_reel      25 pts
-+ qualite_interaction    20 pts
-+ impact_verifiable      25 pts
-+ usage_juste            10 pts
+  usage consistency      20%
++ real work usage        25%
++ interaction quality    20%
++ proof and impact       25%
++ fair usage             10%
 ```
 
-Ce score doit toujours etre decomposable. Pas de boite noire.
+The JSON export includes `score.calibration`, with component-level scores and priority levers. The score is not a black box.
 
-## Sources
+## User-Friendly Report
 
-Claude Code :
+The premium PDF is designed as a coaching recap, not a technical audit.
 
-- `~/.claude/projects/*.jsonl`
-- sessions, prompts, tool use, fichiers, cwd, modeles, tokens si presents.
+It shows:
 
-Codex :
+- the user's AI profile;
+- conversations and message volume;
+- top detected tool;
+- top detected use case;
+- quick chat vs workflow mode;
+- the clearest improvement levers;
+- three next moves;
+- a reusable prompt frame.
 
-- `~/.codex/sessions/**/*.jsonl`
-- sessions, cwd, shell calls, tool calls, fichiers, usage tokens si present.
+Example levers:
 
-Cursor :
+- finish with proof;
+- give more context;
+- use real work material;
+- move from chat to workflow.
 
-- base locale `state.vscdb`
-- composer sessions, messages, fichiers attaches, modeles.
+## Pre-Training And Post-Training Flow
 
-Git local :
+Recommended client flow:
 
-- commits depuis la formation ;
-- co-authors IA ;
-- fichiers modifies ;
-- tests/docs ajoutes ;
-- PR/review si integration GitHub/GitLab disponible.
+1. Run the audit before training.
+2. Use the PDF to help employees understand their current habits.
+3. Use the aggregate learning patterns to tailor Wonka workshops.
+4. Run the same audit again after the training cycle.
+5. Compare baseline vs checkpoint exports.
 
-## Principes de confidentialite
+The core comparison is:
 
-Par defaut, le CLI ne doit jamais uploader de contenu brut :
+```text
+post-training checkpoint vs pre-training baseline
+```
 
-- pas de prompt complet ;
-- pas de code source ;
-- pas de chemin absolu complet ;
-- pas de secret/env/token ;
-- pas de message assistant complet.
-
-Il envoie seulement :
-
-- metriques numeriques ;
-- categories de taches ;
-- fingerprints anonymises ;
-- extraits courts rediges localement si explicitement actives ;
-- exemples anonymises et redacted.
-
-## Premier MVP
-
-1. CLI local TypeScript.
-2. Scan Claude Code + Codex + Cursor.
-3. Export JSON agrege.
-4. Calcul KPI de baseline actuelle.
-5. Rapport Markdown et PDF employes avec recap type Wrapped sans image obligatoire.
-6. Upload API Wonka optionnel.
-
-## Etat actuel du prototype
-
-Un MVP local sans dependance npm est disponible dans ce dossier.
-
-Commandes :
+## Local Development
 
 ```bash
+npm test
 npm run preview
 npm run audit:local
 npm run report:client
 npm run go-live:check
-node src/cli.js --local --org acme --team engineering --out ./out
+npm run pack:check
 ```
 
-Ce qui fonctionne :
+The package intentionally has no npm runtime dependencies.
 
-- detection et aggregation Claude Code ;
-- detection et aggregation Codex ;
-- detection et aggregation Cursor via `sqlite3` local ;
-- detection Git locale basique ;
-- export JSON anonymise ;
-- rapport Markdown ;
-- rapport PDF employes brand Wonka : couverture, one page recap, one page actions ;
-- score AI Practice Score.
-- readiness baseline pre-formation maintenant puis checkpoint post-formation a 3 mois.
-- checklist go-live dans `GO-LIVE.md`.
-- verification go-live automatisee avec `npm run go-live:check`.
+## Published Package
 
-Limites actuelles :
+Package name:
 
-- Cursor est parse en mode agrege safe : le CLI n'extrait pas les blobs complets ni les chemins de fichiers ;
-- pas d'upload API Wonka ; le partage reste manuel/volontaire ;
-- comparaison 3-month checkpoint vs baseline encore manuelle via exports JSON.
-
-## Go live client
-
-Voir `GO-LIVE.md`.
-
-Le lancement client doit inclure :
-
-- un message de transparence aux employes ;
-- une baseline actuelle ;
-- une nouvelle mesure 3 mois apres les formations/workshops ;
-- un PDF oriente employes ;
-- une invitation aux workshops si le score est sous 60/100, si la validation est faible, ou si les prompts vagues restent eleves.
-
-Commande de readiness :
-
-```bash
-npm run go-live:check
+```text
+wonka-audit
 ```
 
-## Valeur commerciale
+Repository:
 
-La baseline pre-formation rend les workshops plus precis. Le checkpoint a 3 mois devient ensuite une preuve de transformation :
+```text
+https://github.com/Caezarr/wonka-audit
+```
 
-> Apres la formation, les equipes ne font pas seulement plus d'IA. Elles font plus de travail utile avec l'IA, avec moins de frictions et plus de verification.
+## Current Limitations
+
+- No automatic upload.
+- No admin dashboard.
+- No central employee monitoring.
+- Cursor coverage depends on local `sqlite3`.
+- Git correlation is intentionally basic and local.
+- The report is strongest when run over a meaningful activity window.
+
+## Security Notes
+
+See [SECURITY-CISO.md](./SECURITY-CISO.md).

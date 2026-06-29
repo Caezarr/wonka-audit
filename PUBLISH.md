@@ -24,7 +24,7 @@ npm run audit:local
 npm test
 npm run pack:check
 npm pack --cache /private/tmp/wonka-npm-cache
-npx --yes ./wonka-audit-0.1.2.tgz --out ./tmp/package-smoke
+npx --yes ./wonka-audit-0.1.3.tgz --out ./tmp/package-smoke
 ```
 
 Check that the dry-run package does not include:
