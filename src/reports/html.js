@@ -83,7 +83,7 @@ export function renderHtmlReport(audit) {
       </article>
 
       <aside class="share-rail" aria-label="Share actions">
-        <button class="share-button black" type="button" data-copy-post>Copy LinkedIn post</button>
+        <button class="share-button black" type="button" data-linkedin-flow>Copy & open LinkedIn</button>
         <a class="share-button blue" href="https://www.linkedin.com/feed/" target="_blank" rel="noreferrer">Open LinkedIn</a>
         <button class="share-button green" type="button" data-copy-card>Copy card text</button>
         <a class="share-button soft" href="wonka-ai-wrapped-card.svg" download>Download your card</a>
@@ -570,9 +570,10 @@ function copyText(text) {
   area.remove();
   return Promise.resolve();
 }
-document.querySelector("[data-copy-post]")?.addEventListener("click", async (event) => {
+document.querySelector("[data-linkedin-flow]")?.addEventListener("click", async (event) => {
+  window.open("https://www.linkedin.com/feed/", "_blank", "noreferrer");
   await copyText(linkedinPost);
-  event.currentTarget.textContent = "Copied";
+  event.currentTarget.textContent = "Copied. Paste on LinkedIn";
 });
 document.querySelector("[data-copy-card]")?.addEventListener("click", async (event) => {
   await copyText(document.querySelector("#wrapped-card")?.innerText || "");

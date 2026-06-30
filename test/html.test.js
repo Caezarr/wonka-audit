@@ -66,7 +66,7 @@ test("renderHtmlReport creates the local report page", () => {
   assert.match(html, /<!doctype html>/);
   assert.match(html, /YOUR AI WRAPPED/);
   assert.match(html, /Download your card/);
-  assert.match(html, /Copy LinkedIn post/);
+  assert.match(html, /Copy & open LinkedIn/);
   assert.match(html, /LinkedIn-ready recap/);
   assert.match(html, /AI Practice Score/);
   assert.match(html, /No prompts, code, secrets/);

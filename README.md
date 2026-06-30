@@ -35,7 +35,7 @@ wonka-ai-audit-report.md
 linkedin-post.txt
 ```
 
-`index.html` is the local user-friendly recap page. It opens with a terminal-style AI Wrapped card, share actions, and plain-language levers. `wonka-ai-wrapped-card.svg` is the standalone share card. The PDF is the portable report. `linkedin-post.txt` is a short privacy-safe draft the user can copy into LinkedIn if they want to share their AI practice recap. The JSON is useful only if the employee or client explicitly decides to share it with Wonka.
+`index.html` is the local user-friendly recap page. It opens with a terminal-style AI Wrapped card, share actions, and plain-language levers. `wonka-ai-wrapped-card.svg` is the standalone share card. The PDF is the portable report. `linkedin-post.txt` is a short privacy-safe draft the user can copy into LinkedIn if they want to share their AI practice recap. The LinkedIn button uses a privacy-safe one-click flow: copy the post text and open LinkedIn. The JSON is useful only if the employee or client explicitly decides to share it with Wonka.
 
 Each run gets its own folder by default, so weekly usage does not overwrite previous reports.
 
