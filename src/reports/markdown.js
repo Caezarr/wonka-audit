@@ -113,7 +113,7 @@ function recommendations(audit) {
 }
 
 function pct(v) {
-  return `${Math.round((v || 0) * 100)}%`;
+  return v === null || v === undefined ? "n/a" : `${Math.round(v * 100)}%`;
 }
 
 function label(value) {

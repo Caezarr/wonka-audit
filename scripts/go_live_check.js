@@ -34,6 +34,8 @@ fileCheck("Aggregate JSON exists", "out/wonka-ai-audit-report.json", 100);
 fileCheck("Local HTML recap exists", "out/index.html", 1000);
 fileCheck("Wrapped share card exists", "out/wonka-ai-wrapped-card.svg", 1000);
 fileCheck("LinkedIn draft exists", "out/linkedin-post.txt", 100);
+fileCheck("Methodology manifest exists", "out/wonka-ai-audit-methodology.json", 100);
+fileCheck("Audit integrity manifest exists", "out/wonka-ai-audit-manifest.json", 100);
 fileCheck("Employee PDF exists", "output/pdf/wonka-ai-usage-audit-premium-report.pdf", 1000);
 fileCheck("Go-live runbook exists", "GO-LIVE.md", 100);
 

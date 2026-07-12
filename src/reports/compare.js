@@ -5,6 +5,7 @@ export function loadAudit(path) {
 }
 
 export function renderComparisonReport(base, current) {
+  assertComparable(base, current);
   const baseLabel = base.period || "base";
   const currentLabel = current.period || "current";
   const baseScore = base.score?.ai_practice_score || 0;
@@ -39,6 +40,26 @@ ${kpiRows(base, current)}
 
 ${recommendations(base, current).map((r) => `- **${r.title}**: ${r.body}`).join("\n")}
 `;
+}
+
+export function assertComparable(base, current) {
+  const baseKey = base.methodology?.comparability_key;
+  const currentKey = current.methodology?.comparability_key;
+  if (!baseKey || !currentKey) {
+    throw new Error("Audits are not comparable: methodology comparability metadata is missing.");
+  }
+  if (baseKey !== currentKey) {
+    throw new Error(`Audits are not comparable: ${baseKey} != ${currentKey}`);
+  }
+  const baseStart = Date.parse(base.collection_window?.start);
+  const baseEnd = Date.parse(base.collection_window?.end);
+  const currentStart = Date.parse(current.collection_window?.start);
+  const currentEnd = Date.parse(current.collection_window?.end);
+  const baseDays = baseEnd - baseStart;
+  const currentDays = currentEnd - currentStart;
+  if (![baseDays, currentDays].every(Number.isFinite) || Math.abs(baseDays - currentDays) > 86400000) {
+    throw new Error("Audits are not comparable: collection windows differ by more than one day.");
+  }
 }
 
 function dimensionRows(base, current) {
@@ -135,4 +156,3 @@ function formatDelta(a, b, kind) {
   if (kind.startsWith("pct")) return `${delta >= 0 ? "+" : ""}${Math.round(delta * 100)} pts`;
   return signed(delta);
 }
-

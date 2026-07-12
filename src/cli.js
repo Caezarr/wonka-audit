@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { homedir } from "node:os";
 import { join, resolve } from "node:path";
 import { parseArgs, printHelp } from "./lib/args.js";
@@ -17,6 +18,9 @@ import { renderLinkedInPost } from "./reports/linkedin.js";
 import { renderHtmlReport } from "./reports/html.js";
 import { renderWrappedCardSvg } from "./reports/card-svg.js";
 import { loadAudit, renderComparisonReport } from "./reports/compare.js";
+import { collectSafely } from "./lib/collection.js";
+import { AUDIT_SCHEMA_VERSION, collectorMetadata, methodologyDescriptor } from "./lib/contracts.js";
+import { aggregateAudits, loadAuditDirectory, renderAggregateMarkdown } from "./enterprise/aggregate.js";
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
@@ -39,6 +43,18 @@ async function main() {
     console.log(`Wrote ${outPath}`);
     return;
   }
+  if (args.aggregate) {
+    const loaded = loadAuditDirectory(resolve(args.aggregate));
+    const aggregate = aggregateAudits(loaded.audits, { minCohortSize: args.minCohortSize });
+    aggregate.input = { files_scanned: loaded.files_scanned, rejected: loaded.rejected };
+    const outDir = resolve(args.out || "wonka-audit-aggregate");
+    if (!existsSync(outDir)) mkdirSync(outDir, { recursive: true });
+    writeFileSync(resolve(outDir, "wonka-ai-audit-aggregate.json"), JSON.stringify(aggregate, null, 2));
+    writeFileSync(resolve(outDir, "wonka-ai-audit-aggregate.md"), renderAggregateMarkdown(aggregate));
+    console.log(`Aggregated ${aggregate.input_export_count} compatible exports into ${outDir}`);
+    console.log(`${aggregate.suppressed_cohorts.length} cohort(s) suppressed below the privacy threshold`);
+    return;
+  }
   if (args.upload) {
     throw new Error("Upload is not implemented. This MVP is local-only; share the generated PDF/JSON manually if needed.");
   }
@@ -51,14 +67,15 @@ async function main() {
     window,
     privacy,
     orgSlug: args.org,
-    teamSlug: args.team
+    teamSlug: args.team,
+    contentInspection: !args.noContent
   };
 
   const [claude, codex, cursor, git] = await Promise.all([
-    collectClaudeCode(context),
-    collectCodex(context),
-    collectCursor(context),
-    collectGit(context)
+    collectSafely("claude_code", collectClaudeCode, context),
+    collectSafely("codex", collectCodex, context),
+    collectSafely("cursor", collectCursor, context),
+    collectSafely("git", collectGit, context)
   ]);
 
   if (args.preview) {
@@ -75,7 +92,7 @@ async function main() {
   const score = buildScore(metrics);
   const recommendations = buildRecommendations(metrics, score);
   const audit = {
-    schema_version: "1.0",
+    schema_version: AUDIT_SCHEMA_VERSION,
     generated_at: new Date().toISOString(),
     org_slug: args.org,
     team_slug: args.team || undefined,
@@ -88,9 +105,16 @@ async function main() {
     privacy: {
       content_uploaded: false,
       examples_included: false,
-      hashing: "sha256_with_org_salt",
-      local_content_inspection: true,
+      hashing: "sha256_with_ephemeral_audit_salt",
+      local_content_inspection: context.contentInspection,
       raw_content_exported: false
+    },
+    methodology: methodologyDescriptor({ contentInspection: context.contentInspection }),
+    collectors: {
+      claude_code: collectorMetadata(claude),
+      codex: collectorMetadata(codex),
+      cursor: collectorMetadata(cursor),
+      git: collectorMetadata(git)
     },
     source_coverage: {
       claude_code: coverage(claude),
@@ -114,18 +138,42 @@ async function main() {
   const pdfPath = resolve(outDir, "wonka-ai-usage-audit.pdf");
   const cardPath = resolve(outDir, "wonka-ai-wrapped-card.svg");
   const linkedinPath = resolve(outDir, "linkedin-post.txt");
+  const methodologyPath = resolve(outDir, "wonka-ai-audit-methodology.json");
+  const manifestPath = resolve(outDir, "wonka-ai-audit-manifest.json");
   writeFileSync(jsonPath, JSON.stringify(audit, null, 2));
   writeFileSync(htmlPath, renderHtmlReport(audit));
   writeFileSync(markdownPath, renderMarkdownReport(audit));
   writeFileSync(cardPath, renderWrappedCardSvg(audit));
   writeFileSync(linkedinPath, renderLinkedInPost(audit));
+  writeFileSync(methodologyPath, JSON.stringify({
+    schema_version: audit.schema_version,
+    methodology: audit.methodology,
+    collectors: audit.collectors,
+    collection_window: audit.collection_window,
+    privacy: audit.privacy,
+    source_coverage: audit.source_coverage
+  }, null, 2));
   writePdfReport(audit, pdfPath);
+  const artifactPaths = [jsonPath, htmlPath, markdownPath, pdfPath, cardPath, linkedinPath, methodologyPath];
+  writeFileSync(manifestPath, JSON.stringify({
+    manifest_version: "1.0",
+    generated_at: audit.generated_at,
+    schema_version: audit.schema_version,
+    comparability_key: audit.methodology.comparability_key,
+    privacy: audit.privacy,
+    artifacts: artifactPaths.map((path) => ({
+      name: path.split("/").pop(),
+      sha256: createHash("sha256").update(readFileSync(path)).digest("hex")
+    }))
+  }, null, 2));
   console.log("");
   console.log(`Local page: ${htmlPath}`);
   console.log(`Wrapped card: ${cardPath}`);
   console.log(`PDF ready: ${pdfPath}`);
   console.log(`LinkedIn draft: ${linkedinPath}`);
   console.log(`Data export: ${jsonPath}`);
+  console.log(`Methodology: ${methodologyPath}`);
+  console.log(`Manifest: ${manifestPath}`);
   console.log(`AI Practice Score: ${score.ai_practice_score}/100`);
 }
 
@@ -134,7 +182,9 @@ function coverage(result) {
     status: result.status,
     sessions_detected: result.sessions?.length || 0,
     files_scanned: result.files_scanned,
-    reason: result.reason
+    reason: result.reason,
+    capabilities: result.capabilities || {},
+    warnings: result.warnings || []
   };
 }
 
@@ -199,7 +249,9 @@ function printClientNotice(args) {
   const defaultTarget = args.out ? resolve(args.out) : join(homedir(), "Desktop", "Wonka AI Audit", "<run-folder>");
   console.log("Wonka AI Usage Audit");
   console.log("Runs locally on this computer. No prompts, source code, secrets or raw conversations are uploaded.");
-  console.log("Short prompt snippets may be inspected locally in memory to classify usage quality; they are not exported by default.");
+  console.log(args.noContent
+    ? "Metadata-only mode: prompt/message text is not classified."
+    : "Short prompt snippets may be inspected locally in memory to classify usage quality; they are not exported by default.");
   console.log("Website: https://wonka-ai.com");
   console.log("Terms:   https://wonka-ai.com/cgv");
   console.log(`Output:  ${defaultTarget}`);
@@ -219,7 +271,7 @@ function printPrivacyExplanation() {
   console.log("Local processing:");
   console.log("- The CLI may read short local prompt/message text in memory to classify whether usage is vague, contextualized, constrained or corrective.");
   console.log("- Cursor is read through aggregate sqlite queries; the default report stores counts and rates, not raw Cursor conversations.");
-  console.log("- Hashes use an org-specific salt for local aggregation.");
+  console.log("- Hashes use a non-exported ephemeral salt and cannot be linked across audits.");
   console.log("");
   console.log("Sharing:");
   console.log("- Automatic upload is not implemented.");

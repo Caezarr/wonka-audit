@@ -4,10 +4,12 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { walkFiles } from "../lib/files.js";
 import { classifyPrompt } from "../lib/classify.js";
+import { isTestCommand, isValidationCommand } from "../lib/classify.js";
+import { commonCapabilities } from "../lib/collection.js";
 import { inWindow } from "../lib/time.js";
 
-export async function collectClaudeCode({ window, privacy, orgSlug, teamSlug }) {
-  const base = join(homedir(), ".claude", "projects");
+export async function collectClaudeCode({ window, privacy, orgSlug, teamSlug, contentInspection = true, sourcePaths = {} }) {
+  const base = sourcePaths.claudeCode || join(homedir(), ".claude", "projects");
   if (!existsSync(base)) {
     return { source: "claude_code", status: "missing", sessions: [] };
   }
@@ -16,12 +18,13 @@ export async function collectClaudeCode({ window, privacy, orgSlug, teamSlug }) 
   const bySession = new Map();
 
   for (const file of files) {
-    await parseFile(file.path, bySession, { window, privacy, orgSlug, teamSlug });
+    await parseFile(file.path, bySession, { window, privacy, orgSlug, teamSlug, contentInspection });
   }
 
   return {
     source: "claude_code",
     status: "ready",
+    capabilities: commonCapabilities({ contentInspection, validationObservable: true }),
     files_scanned: files.length,
     sessions: [...bySession.values()].map(finalizeSession)
   };
@@ -61,8 +64,10 @@ async function parseFile(filePath, bySession, ctx) {
 
     if (row.type === "user") {
       session.user_turns += 1;
-      const text = extractText(message.content);
-      applyPromptFeatures(session, text);
+      if (ctx.contentInspection) {
+        const text = extractText(message.content);
+        applyPromptFeatures(session, text);
+      }
     }
 
     if (row.type === "assistant") {
@@ -84,6 +89,13 @@ async function parseFile(filePath, bySession, ctx) {
             registerPath(session, input.file_path);
             registerPath(session, input.path);
             registerPath(session, input.notebook_path);
+            const command = input.command || input.cmd;
+            if (typeof command === "string") {
+              session.shell_commands_count += 1;
+              if (isTestCommand(command)) session.test_commands_count += 1;
+              if (isValidationCommand(command)) session.validation_commands_count += 1;
+              if (/\bgit\b/.test(command)) session.git_actions_count += 1;
+            }
           }
         }
       }
@@ -125,7 +137,8 @@ function getSession(map, id, tool, ctx, ts) {
         contextualized_prompts: 0,
         constrained_prompts: 0,
         correction_prompts: 0
-      }
+      },
+      capabilities: commonCapabilities({ contentInspection: ctx.contentInspection, validationObservable: true })
     };
     map.set(key, session);
   }
@@ -178,9 +191,8 @@ function finalizeSession(s) {
     task_categories: [...s.task_categories],
     outcome: {
       has_verifiable_action: hasAction,
-      has_test_or_validation: false,
+      has_test_or_validation: s.validation_commands_count > 0,
       likely_abandoned: s.user_turns > 0 && !hasAction && s.assistant_turns <= 1
     }
   };
 }
-

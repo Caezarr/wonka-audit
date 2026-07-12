@@ -167,10 +167,10 @@ usage_juste =
 + cache_reuse_rate             20%
 ```
 
-Calibration actuelle `local_individual_v2` :
+Modele actuel `local_individual_v3_directional` :
 
 - 40/100 : needs work ;
 - 70/100 : healthy ;
 - 90/100 : strong.
 
-Le score est une baseline locale individuelle. Il ne doit pas etre vendu comme une mesure admin d'equipe.
+Le score est une baseline locale individuelle directionnelle, non calibree empiriquement. Une metrique non observable est exclue du calcul et ne vaut jamais zero par defaut. Il ne doit pas etre vendu comme une mesure admin d'equipe, une evaluation de performance ou une preuve causale de l'effet d'une formation.

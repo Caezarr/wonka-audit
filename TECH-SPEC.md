@@ -105,7 +105,7 @@ type AiSession = {
 
 ```ts
 type AuditExport = {
-  schema_version: "1.0";
+  schema_version: "2.0";
   generated_at: string;
   org_slug: string;
   team_slug?: string;
@@ -152,9 +152,11 @@ Hors scope actuel : Wonka Chat. Le MVP se concentre uniquement sur Claude Code, 
 
 ## Calibration du score
 
-Modele courant : `local_individual_v2`.
+Modele courant : `local_individual_v3_directional`.
 
-Le score est calibre pour un utilisateur qui lance le CLI sur sa propre machine. Il ne suppose aucun acces admin aux donnees locales des employes.
+Le score est directionnel et non calibre empiriquement. Les signaux non observables sont `null`, exclus puis les poids disponibles sont renormalises. Chaque export contient les versions de schema, methode et scoring ainsi qu'une `comparability_key`.
+
+Le score est concu comme un indicateur directionnel pour un utilisateur qui lance le CLI sur sa propre machine. Il ne suppose aucun acces admin aux donnees locales des employes.
 
 Seuils lisibles :
 

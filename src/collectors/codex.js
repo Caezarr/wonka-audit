@@ -5,9 +5,10 @@ import { join } from "node:path";
 import { walkFiles } from "../lib/files.js";
 import { classifyPrompt, isTestCommand, isValidationCommand } from "../lib/classify.js";
 import { inWindow } from "../lib/time.js";
+import { commonCapabilities } from "../lib/collection.js";
 
-export async function collectCodex({ window, privacy, orgSlug, teamSlug }) {
-  const base = join(homedir(), ".codex", "sessions");
+export async function collectCodex({ window, privacy, orgSlug, teamSlug, contentInspection = true, sourcePaths = {} }) {
+  const base = sourcePaths.codex || join(homedir(), ".codex", "sessions");
   if (!existsSync(base)) {
     return { source: "codex", status: "missing", sessions: [] };
   }
@@ -15,12 +16,13 @@ export async function collectCodex({ window, privacy, orgSlug, teamSlug }) {
   const files = walkFiles(base, (_full, entry) => entry.endsWith(".jsonl"), 6);
   const bySession = new Map();
   for (const file of files) {
-    await parseFile(file.path, bySession, { window, privacy, orgSlug, teamSlug });
+    await parseFile(file.path, bySession, { window, privacy, orgSlug, teamSlug, contentInspection });
   }
 
   return {
     source: "codex",
     status: "ready",
+    capabilities: commonCapabilities({ contentInspection, validationObservable: true }),
     files_scanned: files.length,
     sessions: [...bySession.values()].map(finalizeSession)
   };
@@ -72,8 +74,10 @@ async function parseFile(filePath, bySession, ctx) {
     if (row.type !== "response_item" || !payload || typeof payload !== "object") continue;
     if (payload.role === "user") {
       session.user_turns += 1;
-      const text = extractText(payload.content);
-      applyPromptFeatures(session, text);
+      if (ctx.contentInspection) {
+        const text = extractText(payload.content);
+        applyPromptFeatures(session, text);
+      }
     }
     if (payload.role === "assistant") session.assistant_turns += 1;
     if (payload.type === "function_call" || payload.type === "local_shell_call") {
@@ -128,7 +132,8 @@ function getSession(map, id, tool, ctx, ts) {
         contextualized_prompts: 0,
         constrained_prompts: 0,
         correction_prompts: 0
-      }
+      },
+      capabilities: commonCapabilities({ contentInspection: ctx.contentInspection, validationObservable: true })
     };
     map.set(key, session);
   }

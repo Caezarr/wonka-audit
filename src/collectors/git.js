@@ -24,7 +24,13 @@ export async function collectGit({ window }) {
     status: "ready",
     repos_detected: 1,
     commits_in_window: commits.length,
-    ai_assisted_commits: aiAssisted
+    ai_assisted_commits: aiAssisted,
+    capabilities: {
+      content_classification: false,
+      validation_detection: false,
+      token_usage: false,
+      project_context: true
+    }
   };
 }
 
@@ -40,4 +46,3 @@ function execGit(args) {
     return "";
   }
 }
-

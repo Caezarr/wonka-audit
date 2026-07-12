@@ -28,6 +28,8 @@ The current MVP writes:
 
 - `out/wonka-ai-audit-report.json`
 - `out/wonka-ai-audit-report.md`
+- `out/wonka-ai-audit-methodology.json`
+- `out/wonka-ai-audit-manifest.json`
 - `output/pdf/wonka-ai-usage-audit-premium-report.pdf`
 
 ## Employee Message

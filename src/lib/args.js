@@ -5,8 +5,11 @@ export function parseArgs(argv) {
     upload: false,
     includeExamples: false,
     noContent: false,
+    metadataOnly: false,
     explainPrivacy: false,
     compare: null,
+    aggregate: null,
+    minCohortSize: 5,
     org: "local",
     team: null,
     period: "baseline",
@@ -25,8 +28,14 @@ export function parseArgs(argv) {
     else if (arg === "--local") args.local = true;
     else if (arg === "--upload") args.upload = true;
     else if (arg === "--compare") args.compare = [argv[++i], argv[++i]].filter(Boolean);
+    else if (arg === "--aggregate") args.aggregate = argv[++i] ?? null;
+    else if (arg === "--min-cohort-size") args.minCohortSize = Number(argv[++i]);
     else if (arg === "--include-examples") args.includeExamples = true;
     else if (arg === "--no-content") args.noContent = true;
+    else if (arg === "--metadata-only") {
+      args.metadataOnly = true;
+      args.noContent = true;
+    }
     else if (arg === "--explain-privacy") args.explainPrivacy = true;
     else if (arg === "--org") args.org = argv[++i] ?? args.org;
     else if (arg === "--team") args.team = argv[++i] ?? null;
@@ -63,6 +72,8 @@ Options:
   --upload               Not implemented; this MVP is local-only
   --explain-privacy      Explain local reads, outputs and network behavior
   --compare <a> <b>      Compare two audit JSON exports
+  --aggregate <dir>      Aggregate compatible exports with cohort suppression
+  --min-cohort-size <n>  Privacy threshold for aggregation, default: 5, minimum: 3
   --org <slug>           Client slug, default: local
   --team <slug>          Optional team slug
   --period <label>       Optional report label, default: baseline
@@ -71,7 +82,8 @@ Options:
   --since <date>         Explicit window start
   --until <date>         Explicit window end
   --include-examples     Reserved for redacted examples
-  --no-content           Keep content disabled, default behavior
+  --no-content           Disable local prompt/message text classification
+  --metadata-only        Alias for --no-content; do not classify prompt/message text
   --out <path>           Output directory, default: Desktop/Wonka AI Audit
 `);
 }

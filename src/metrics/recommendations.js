@@ -4,7 +4,7 @@ export function buildRecommendations(metrics, score) {
     out.push({ priority, title, body, target_metric });
   };
 
-  if ((metrics.verifiable_impact.validation_rate || 0) < 0.25) {
+  if (metrics.verifiable_impact.validation_rate !== null && metrics.verifiable_impact.validation_rate < 0.25) {
     add(
       "high",
       "Construire les reflexes de validation",
@@ -12,7 +12,7 @@ export function buildRecommendations(metrics, score) {
       "validation_rate"
     );
   }
-  if ((metrics.interaction_quality.vague_prompt_rate || 0) > 0.3) {
+  if (metrics.interaction_quality.vague_prompt_rate !== null && metrics.interaction_quality.vague_prompt_rate > 0.3) {
     add(
       "high",
       "Reduire les prompts vagues",
@@ -47,4 +47,3 @@ export function buildRecommendations(metrics, score) {
 
   return out.slice(0, 4);
 }
-

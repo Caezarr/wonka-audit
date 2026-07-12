@@ -20,6 +20,8 @@ By default, the tool:
 
 The tool is designed to be ISO 27001-friendly because it follows data minimization, local processing, explicit output, no default network upload, and auditable open package behavior. It does not by itself certify the customer environment or replace the customer's own risk assessment, DPIA, vendor review or internal security approval.
 
+The score is directional and uncalibrated. It is not intended for employee ranking, automated employment decisions or individual performance monitoring.
+
 ## Purpose
 
 The goal is to measure how employees use AI tools before training, tune the workshops to those real practices, then measure whether employees use AI tools better after training. It is not about whether they consume more tokens.
@@ -128,6 +130,8 @@ The tool processes signals such as:
 
 The tool may read short prompt/message text locally in memory to classify whether a prompt appears vague, contextualized, constrained or corrective. The raw prompt text is not written to the default JSON, Markdown or PDF outputs.
 
+With `--metadata-only` or `--no-content`, prompt/message text is not selected for Cursor and is not extracted or classified by the Claude Code and Codex adapters. Structural records are still parsed locally to obtain timestamps, roles, counts and tool metadata.
+
 ## Data not uploaded by default
 
 By default, `wonka-audit` does not upload:
@@ -218,7 +222,7 @@ The tool follows these privacy principles:
 - No raw content in default outputs: prompts, answers and code are not included.
 - No default upload: sharing the JSON export is an explicit customer action.
 - Limited retention: output files are stored locally and can be deleted by the employee or managed by endpoint policy.
-- Pseudonymization: internal identifiers are hashed with a client-specific salt where identifiers are needed for aggregation.
+- Pseudonymization: internal identifiers are hashed with an ephemeral per-audit salt that is not exported. This prevents cross-audit linkage of local session and project hashes.
 - Path minimization: home directories are compacted and absolute local paths are not included in the default aggregate report.
 
 ## Security controls and ISO 27001 alignment

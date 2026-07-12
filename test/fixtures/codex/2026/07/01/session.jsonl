@@ -1,0 +1,5 @@
+{"timestamp":"2026-07-01T11:00:00.000Z","type":"session_meta","payload":{"id":"codex-fixture","cwd":"/client/project","model":"gpt-test"}}
+{"timestamp":"2026-07-01T11:00:10.000Z","type":"response_item","payload":{"role":"user","content":[{"type":"input_text","text":"Fix src/api.js and run tests with a concise report"}]}}
+{"timestamp":"2026-07-01T11:01:00.000Z","type":"response_item","payload":{"type":"function_call","name":"shell","arguments":"{\"cmd\":\"npm run lint\"}"}}
+{"timestamp":"2026-07-01T11:01:10.000Z","type":"event_msg","payload":{"info":{"total_token_usage":{"input_tokens":200,"cached_input_tokens":50,"output_tokens":40}}}}
+not-json
