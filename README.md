@@ -142,7 +142,15 @@ Compare two local exports:
 npx wonka-audit --compare baseline.json checkpoint.json --out ./wonka-compare
 ```
 
-Create an explicit public microsite bundle:
+Create the private report and a public microsite in one run:
+
+```bash
+npx wonka-audit --share
+```
+
+That is the normal sharing command. The private files and the public website are written to separate folders automatically.
+
+To rebuild a website from an existing export, the optional advanced form remains available:
 
 ```bash
 npx wonka-audit --share ./wonka-ai-audit-report.json --out ./public-share

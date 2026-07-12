@@ -34,7 +34,11 @@ export function parseArgs(argv) {
     else if (arg === "--upload") args.upload = true;
     else if (arg === "--compare") args.compare = [argv[++i], argv[++i]].filter(Boolean);
     else if (arg === "--aggregate") args.aggregate = argv[++i] ?? null;
-    else if (arg === "--share") args.share = argv[++i] ?? null;
+    else if (arg === "--share") {
+      const next = argv[i + 1];
+      if (next && !next.startsWith("--")) args.share = argv[++i];
+      else args.share = true;
+    }
     else if (arg === "--share-url") args.shareUrl = argv[++i] ?? null;
     else if (arg === "--sign-private-key") args.signPrivateKey = argv[++i] ?? null;
     else if (arg === "--verify-signature") args.verifySignature = argv[++i] ?? null;
@@ -83,7 +87,7 @@ Options:
   --explain-privacy      Explain local reads, outputs and network behavior
   --compare <a> <b>      Compare two audit JSON exports
   --aggregate <dir>      Aggregate compatible exports with cohort suppression
-  --share <audit.json>   Create an opt-in public microsite from an audit export
+  --share [audit.json]   Also create an opt-in public microsite; path is optional
   --share-url <url>      Canonical public URL used by LinkedIn/Open Graph
   --sign-private-key <p> Sign the audit manifest with an Ed25519 PEM key
   --verify-signature <p> Verify a manifest signature envelope and exit
