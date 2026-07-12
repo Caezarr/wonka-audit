@@ -40,6 +40,22 @@ Check that the dry-run package does not include:
 
 ## Publish
 
+### Recommended: npm Trusted Publishing
+
+The repository includes `.github/workflows/publish-npm.yml`. Configure the
+`wonka-audit` package on npm with this trusted publisher:
+
+- organization/user: `Caezarr`;
+- repository: `wonka-audit`;
+- workflow: `publish-npm.yml`;
+- environment: `npm`.
+
+Then merge the release PR and run the `Publish npm` workflow manually, or publish
+a GitHub release. GitHub exchanges an OIDC identity with npm, so no OTP or
+long-lived npm token is stored in repository secrets.
+
+### Manual fallback
+
 ```bash
 npm whoami
 npm version patch --no-git-tag-version # only if package.json was not already bumped
