@@ -32,7 +32,7 @@
     "report:client": "python3 scripts/build_premium_report.py --input out/wonka-ai-audit-report.json --out output/pdf/wonka-ai-usage-audit-premium-report.pdf",
     "report:technical": "python3 scripts/build_client_report.py --input out/wonka-ai-audit-report.json --base out/baseline/wonka-ai-audit-report.json --current out/checkpoint/wonka-ai-audit-report.json --out output/pdf/wonka-ai-usage-audit-client-report.pdf",
     "go-live:check": "node scripts/go_live_check.js",
-    "pack:check": "npm pack --dry-run --cache /private/tmp/wonka-npm-cache"
+    "pack:check": "npm pack --dry-run"
   },
   "keywords": [
     "ai",
