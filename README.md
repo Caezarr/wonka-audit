@@ -142,6 +142,23 @@ Compare two local exports:
 npx wonka-audit --compare baseline.json checkpoint.json --out ./wonka-compare
 ```
 
+Create an explicit public microsite bundle:
+
+```bash
+npx wonka-audit --share ./wonka-ai-audit-report.json --out ./public-share
+```
+
+After hosting it, add the final HTTPS URL with `--share-url` to generate canonical LinkedIn/Open Graph metadata. The share payload excludes organization, team, participant pseudonym, prompts, paths and raw conversations. See `docs/SHARE-SITE.md`.
+
+Enterprise operators can provide `WONKA_AUDIT_PARTICIPANT_ID` and a tenant secret of at least 24 characters in `WONKA_AUDIT_TENANT_SECRET`. The export then contains a stable tenant-scoped HMAC pseudonym used only to remove duplicate participants during aggregation.
+
+Optionally sign and verify an audit manifest with Ed25519 keys:
+
+```bash
+npx wonka-audit --sign-private-key ./audit-private.pem --out ./signed-audit
+npx wonka-audit --verify-signature ./signed-audit/wonka-ai-audit-manifest.signature.json --public-key ./audit-public.pem
+```
+
 Only exports with the same schema, methodology, scoring model and content mode can be compared. Collection windows must be equivalent.
 
 Aggregate compatible employee-owned exports with small-cohort suppression:

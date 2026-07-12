@@ -36,7 +36,9 @@ The current thresholds are expert-authored heuristics. Before external benchmark
 
 `--aggregate <dir>` accepts compatible schema `2.0` exports. It produces cohort-level mean, median, p25 and p75 values. Cohorts below `--min-cohort-size` are suppressed; the default is 5 and the hard minimum is 3. Individual rows and session identifiers are not copied to the aggregate.
 
-Each input export is currently treated as one participant. Operators must prevent duplicate participant exports and define cohorts before collection.
+Enterprise operators can provide tenant-scoped participant input through environment variables. The exported HMAC pseudonym enables duplicate removal without exposing the source identifier. Exports without a pseudonym are treated as distinct participants and reported as non-deduplicable.
+
+Audit manifests can be signed with an Ed25519 private key and verified before aggregation. Key generation, custody and rotation remain the client's responsibility.
 
 ## Interpretation limits
 

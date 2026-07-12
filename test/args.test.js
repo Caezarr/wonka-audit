@@ -18,3 +18,14 @@ test("parseArgs supports run labels", () => {
   assert.equal(args.period, "weekly");
   assert.equal(args.runLabel, "week-2026-27");
 });
+
+test("parseArgs supports public share and signature workflows", () => {
+  const args = parseArgs([
+    "--share", "audit.json",
+    "--share-url", "https://example.com/report/",
+    "--sign-private-key", "private.pem"
+  ]);
+  assert.equal(args.share, "audit.json");
+  assert.equal(args.shareUrl, "https://example.com/report/");
+  assert.equal(args.signPrivateKey, "private.pem");
+});

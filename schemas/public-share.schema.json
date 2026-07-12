@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wonka-ai.com/schemas/public-share-1.0.json",
+  "title": "Wonka Public Share Payload",
+  "type": "object",
+  "required": ["share_schema_version", "period", "score", "score_status", "confidence", "profile", "signals", "disclosure"],
+  "properties": {
+    "share_schema_version": { "const": "1.0" },
+    "score": { "type": "number", "minimum": 0, "maximum": 100 },
+    "profile": { "type": "string" },
+    "signals": { "type": "object" },
+    "disclosure": { "type": "string" }
+  },
+  "not": { "anyOf": [
+    { "required": ["org_slug"] },
+    { "required": ["team_slug"] },
+    { "required": ["participant_hash"] }
+  ] },
+  "additionalProperties": true
+}

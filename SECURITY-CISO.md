@@ -22,6 +22,8 @@ The tool is designed to be ISO 27001-friendly because it follows data minimizati
 
 The score is directional and uncalibrated. It is not intended for employee ranking, automated employment decisions or individual performance monitoring.
 
+Public sharing is a separate opt-in transformation. The generated public payload excludes organization, team, participant pseudonym, source coverage, prompts, paths, raw conversations and token detail. The full audit is never required by the public microsite.
+
 ## Purpose
 
 The goal is to measure how employees use AI tools before training, tune the workshops to those real practices, then measure whether employees use AI tools better after training. It is not about whether they consume more tokens.

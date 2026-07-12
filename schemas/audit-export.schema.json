@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wonka-ai.com/schemas/audit-export-2.0.json",
+  "title": "Wonka AI Usage Audit Export",
+  "type": "object",
+  "required": ["schema_version", "generated_at", "collection_window", "privacy", "methodology", "source_coverage", "metrics", "score"],
+  "properties": {
+    "schema_version": { "const": "2.0" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "participant_hash": { "type": "string", "pattern": "^[a-f0-9]{32}$" },
+    "collection_window": {
+      "type": "object",
+      "required": ["start", "end"],
+      "properties": { "start": { "type": "string", "format": "date-time" }, "end": { "type": "string", "format": "date-time" } }
+    },
+    "methodology": { "type": "object", "required": ["comparability_key", "scoring_model_version", "score_status"] },
+    "score": { "type": "object", "required": ["ai_practice_score", "status", "confidence"] },
+    "metrics": { "type": "object" },
+    "privacy": { "type": "object" },
+    "source_coverage": { "type": "object" }
+  },
+  "additionalProperties": true
+}

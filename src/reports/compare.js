@@ -1,7 +1,8 @@
 import { readFileSync } from "node:fs";
+import { validateAuditExport } from "../lib/schema.js";
 
 export function loadAudit(path) {
-  return JSON.parse(readFileSync(path, "utf8"));
+  return validateAuditExport(JSON.parse(readFileSync(path, "utf8")));
 }
 
 export function renderComparisonReport(base, current) {

@@ -9,6 +9,11 @@ export function parseArgs(argv) {
     explainPrivacy: false,
     compare: null,
     aggregate: null,
+    share: null,
+    shareUrl: null,
+    signPrivateKey: null,
+    verifySignature: null,
+    publicKey: null,
     minCohortSize: 5,
     org: "local",
     team: null,
@@ -29,6 +34,11 @@ export function parseArgs(argv) {
     else if (arg === "--upload") args.upload = true;
     else if (arg === "--compare") args.compare = [argv[++i], argv[++i]].filter(Boolean);
     else if (arg === "--aggregate") args.aggregate = argv[++i] ?? null;
+    else if (arg === "--share") args.share = argv[++i] ?? null;
+    else if (arg === "--share-url") args.shareUrl = argv[++i] ?? null;
+    else if (arg === "--sign-private-key") args.signPrivateKey = argv[++i] ?? null;
+    else if (arg === "--verify-signature") args.verifySignature = argv[++i] ?? null;
+    else if (arg === "--public-key") args.publicKey = argv[++i] ?? null;
     else if (arg === "--min-cohort-size") args.minCohortSize = Number(argv[++i]);
     else if (arg === "--include-examples") args.includeExamples = true;
     else if (arg === "--no-content") args.noContent = true;
@@ -73,6 +83,11 @@ Options:
   --explain-privacy      Explain local reads, outputs and network behavior
   --compare <a> <b>      Compare two audit JSON exports
   --aggregate <dir>      Aggregate compatible exports with cohort suppression
+  --share <audit.json>   Create an opt-in public microsite from an audit export
+  --share-url <url>      Canonical public URL used by LinkedIn/Open Graph
+  --sign-private-key <p> Sign the audit manifest with an Ed25519 PEM key
+  --verify-signature <p> Verify a manifest signature envelope and exit
+  --public-key <path>    Ed25519 PEM public key used for verification
   --min-cohort-size <n>  Privacy threshold for aggregation, default: 5, minimum: 3
   --org <slug>           Client slug, default: local
   --team <slug>          Optional team slug

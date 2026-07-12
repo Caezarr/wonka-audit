@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { basename } from "node:path";
 import { walkFiles } from "../lib/files.js";
 import { AUDIT_SCHEMA_VERSION } from "../lib/contracts.js";
+import { validateAuditExport } from "../lib/schema.js";
 
 const KPI_PATHS = [
   "score.ai_practice_score",
@@ -19,7 +20,7 @@ export function loadAuditDirectory(root) {
   const rejected = [];
   for (const file of files) {
     try {
-      const audit = JSON.parse(readFileSync(file.path, "utf8"));
+      const audit = validateAuditExport(JSON.parse(readFileSync(file.path, "utf8")));
       if (audit.schema_version !== AUDIT_SCHEMA_VERSION || !audit.methodology?.comparability_key) {
         rejected.push({ file: basename(file.path), reason: "unsupported schema or missing methodology" });
       } else {
@@ -40,7 +41,15 @@ export function aggregateAudits(audits, { minCohortSize = 5 } = {}) {
   if (methodologyKeys.size > 1) throw new Error("Cannot aggregate audits with incompatible methodologies.");
 
   const cohorts = new Map();
+  const seenParticipants = new Set();
+  let exportsWithoutStableParticipant = 0;
   for (const audit of audits) {
+    if (audit.participant_hash) {
+      if (seenParticipants.has(audit.participant_hash)) continue;
+      seenParticipants.add(audit.participant_hash);
+    } else {
+      exportsWithoutStableParticipant += 1;
+    }
     const key = audit.team_slug || "all";
     if (!cohorts.has(key)) cohorts.set(key, []);
     cohorts.get(key).push(audit);
@@ -71,10 +80,13 @@ export function aggregateAudits(audits, { minCohortSize = 5 } = {}) {
       small_cohorts_suppressed: true
     },
     input_export_count: audits.length,
+    unique_participant_count: audits.length - (audits.filter((audit) => audit.participant_hash).length - seenParticipants.size),
     cohorts: visible,
     suppressed_cohorts: suppressed,
     limitations: [
-      "Each input export is treated as one participant; operators must prevent duplicate participant exports.",
+      exportsWithoutStableParticipant
+        ? `${exportsWithoutStableParticipant} export(s) lacked a stable participant hash and could not be deduplicated.`
+        : "Participant exports were deduplicated using tenant-scoped HMAC pseudonyms.",
       "Aggregates describe observed practice and do not establish causal training impact."
     ]
   };

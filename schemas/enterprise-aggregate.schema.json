@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wonka-ai.com/schemas/enterprise-aggregate-1.0.json",
+  "title": "Wonka Enterprise Aggregate",
+  "type": "object",
+  "required": ["schema_version", "generated_at", "privacy", "input_export_count", "unique_participant_count", "cohorts", "suppressed_cohorts"],
+  "properties": {
+    "schema_version": { "const": "enterprise-aggregate-1.0" },
+    "privacy": {
+      "type": "object",
+      "required": ["minimum_cohort_size", "individual_rows_exported", "small_cohorts_suppressed"]
+    },
+    "cohorts": { "type": "array" },
+    "suppressed_cohorts": { "type": "array" }
+  },
+  "additionalProperties": true
+}
