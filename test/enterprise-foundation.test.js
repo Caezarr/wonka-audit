@@ -5,6 +5,8 @@ import { buildMetrics, buildScore } from "../src/metrics/score.js";
 import { assertComparable } from "../src/reports/compare.js";
 import { aggregateAudits } from "../src/enterprise/aggregate.js";
 import { deriveWindow, inWindow } from "../src/lib/time.js";
+import { makePrivacy } from "../src/lib/privacy.js";
+import { validateAuditExport } from "../src/lib/schema.js";
 
 test("collector failures are isolated as source errors", async () => {
   const result = await collectSafely("broken", async () => {
@@ -59,8 +61,9 @@ test("comparison rejects incompatible methodologies", () => {
 });
 
 test("enterprise aggregation suppresses cohorts below the privacy threshold", () => {
-  const makeAudit = (team, score = 70) => ({
+  const makeAudit = (team, score = 70, participantHash) => ({
     team_slug: team,
+    participant_hash: participantHash,
     methodology: { comparability_key: "compatible" },
     score: { ai_practice_score: score },
     metrics: {
@@ -80,6 +83,24 @@ test("enterprise aggregation suppresses cohorts below the privacy threshold", ()
   assert.equal(JSON.stringify(aggregate).includes("session_id_hash"), false);
 });
 
+test("enterprise aggregation removes duplicate stable participants", () => {
+  const base = {
+    team_slug: "team",
+    participant_hash: "same-person",
+    methodology: { comparability_key: "compatible" },
+    score: { ai_practice_score: 70 },
+    metrics: {
+      business_usage: { file_context_rate: 0.5, advanced_workflow_rate: 0.5 },
+      interaction_quality: { contextualized_prompt_rate: 0.5, vague_prompt_rate: 0.2 },
+      verifiable_impact: { validation_rate: 0.3 },
+      fair_usage: { long_session_without_action_rate: 0.1 }
+    }
+  };
+  const aggregate = aggregateAudits([base, structuredClone(base)], { minCohortSize: 3 });
+  assert.equal(aggregate.unique_participant_count, 1);
+  assert.equal(aggregate.cohorts.length, 0);
+});
+
 test("enterprise aggregation rejects incompatible methodologies", () => {
   assert.throws(() => aggregateAudits([
     { methodology: { comparability_key: "v1" } },
@@ -92,4 +113,17 @@ test("date windows reject invalid input and include their boundaries", () => {
   const window = deriveWindow({ since: "2026-07-01", until: "2026-07-01" });
   assert.equal(inWindow(Date.parse("2026-07-01T00:00:00"), window), true);
   assert.equal(inWindow(Date.parse("2026-07-02T00:00:00"), window), false);
+});
+
+test("tenant pseudonyms are stable without exposing participant ids", () => {
+  const privacy = makePrivacy("client", "ephemeral-audit-salt");
+  const first = privacy.stableParticipantHash("employee@example.com", "tenant-secret-with-at-least-24-chars");
+  const second = privacy.stableParticipantHash("employee@example.com", "tenant-secret-with-at-least-24-chars");
+  assert.equal(first, second);
+  assert.equal(first.includes("employee"), false);
+  assert.throws(() => privacy.stableParticipantHash("employee", "short"), /24 characters/);
+});
+
+test("audit schema validation rejects incomplete or legacy exports", () => {
+  assert.throws(() => validateAuditExport({ schema_version: "1.0" }), /Invalid audit export/);
 });

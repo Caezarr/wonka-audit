@@ -1,6 +1,6 @@
 {
   "name": "wonka-audit",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": false,
   "description": "Local AI usage audit CLI for Claude Code, Codex, Cursor and Git.",
   "type": "module",
@@ -18,6 +18,8 @@
   },
   "files": [
     "src",
+    "schemas",
+    "docs",
     "README.md",
     "SECURITY-CISO.md",
     "METHODOLOGY.md",

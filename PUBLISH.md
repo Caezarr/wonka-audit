@@ -14,6 +14,7 @@ The public npm package should contain only:
 - `README.md`;
 - `SECURITY-CISO.md`.
 - `METHODOLOGY.md`;
+- `schemas/` public JSON contracts;
 - `LICENSE`.
 
 It should not publish generated reports, PDFs, local audit outputs, `tmp/`, or Wonka internal PDF assets.
@@ -26,7 +27,7 @@ npm run audit:local
 npm test
 npm run pack:check
 npm pack
-npm_config_cache=/private/tmp/wonka-npx-cache npx --yes --package=./wonka-audit-0.2.0.tgz wonka-audit --metadata-only --out ./tmp/package-smoke
+npm_config_cache=/private/tmp/wonka-npx-cache npx --yes --package=./wonka-audit-0.3.0.tgz wonka-audit --metadata-only --out ./tmp/package-smoke
 ```
 
 Check that the dry-run package does not include:
@@ -50,8 +51,9 @@ The repository includes `.github/workflows/publish-npm.yml`. Configure the
 - workflow: `publish-npm.yml`;
 - environment: `npm`.
 
-Then merge the release PR and run the `Publish npm` workflow manually, or publish
-a GitHub release. GitHub exchanges an OIDC identity with npm, so no OTP or
+Then merge the release PR, tag the exact package version and publish a GitHub
+release. The workflow refuses mismatched tags and versions already present on npm.
+GitHub exchanges an OIDC identity with npm, so no OTP or
 long-lived npm token is stored in repository secrets.
 
 ### Manual fallback
@@ -70,10 +72,10 @@ For this repository, after editing and validating:
 git status
 git add .
 git commit -m "chore: prepare npm release"
-git tag -a v0.2.0 -m "v0.2.0"
+git tag -a v0.3.0 -m "v0.3.0"
 git push origin main
-git push origin v0.2.0
-npm publish
+git push origin v0.3.0
+gh release create v0.3.0 --verify-tag --generate-notes
 ```
 
 Verify:

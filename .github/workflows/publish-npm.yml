@@ -1,7 +1,6 @@
 name: Publish npm
 
 on:
-  workflow_dispatch:
   release:
     types: [published]
 
@@ -31,6 +30,15 @@ jobs:
 
       - name: Inspect package
         run: npm run pack:check
+
+      - name: Verify release version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          test "v$VERSION" = "$GITHUB_REF_NAME"
+          if npm view "wonka-audit@$VERSION" version >/dev/null 2>&1; then
+            echo "wonka-audit@$VERSION already exists on npm"
+            exit 1
+          fi
 
       - name: Publish with provenance
         run: npm publish --access public --provenance

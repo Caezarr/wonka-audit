@@ -21,6 +21,8 @@ import { loadAudit, renderComparisonReport } from "./reports/compare.js";
 import { collectSafely } from "./lib/collection.js";
 import { AUDIT_SCHEMA_VERSION, collectorMetadata, methodologyDescriptor } from "./lib/contracts.js";
 import { aggregateAudits, loadAuditDirectory, renderAggregateMarkdown } from "./enterprise/aggregate.js";
+import { buildPublicSharePayload, renderPublicSharePage } from "./reports/public-share.js";
+import { signManifest, verifyManifestSignature } from "./lib/signature.js";
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
@@ -30,6 +32,12 @@ async function main() {
   }
   if (args.explainPrivacy) {
     printPrivacyExplanation();
+    return;
+  }
+  if (args.verifySignature) {
+    if (!args.publicKey) throw new Error("--verify-signature requires --public-key");
+    const result = verifyManifestSignature(resolve(args.verifySignature), resolve(args.publicKey));
+    console.log(`Valid ${result.algorithm} signature for ${result.manifest}`);
     return;
   }
   if (args.compare) {
@@ -55,6 +63,18 @@ async function main() {
     console.log(`${aggregate.suppressed_cohorts.length} cohort(s) suppressed below the privacy threshold`);
     return;
   }
+  if (args.share) {
+    const audit = loadAudit(resolve(args.share));
+    const outDir = resolve(args.out || "wonka-audit-share");
+    if (!existsSync(outDir)) mkdirSync(outDir, { recursive: true });
+    writeFileSync(resolve(outDir, "index.html"), renderPublicSharePage(audit, { shareUrl: args.shareUrl || "" }));
+    writeFileSync(resolve(outDir, "share-card.svg"), renderWrappedCardSvg(audit));
+    writeFileSync(resolve(outDir, "public-share.json"), JSON.stringify(buildPublicSharePayload(audit), null, 2));
+    console.log(`Public share bundle: ${outDir}`);
+    console.log("Privacy boundary: no organization, team, participant hash, prompts, paths or raw conversations exported.");
+    if (!args.shareUrl) console.log("Add --share-url after hosting to enable canonical LinkedIn previews.");
+    return;
+  }
   if (args.upload) {
     throw new Error("Upload is not implemented. This MVP is local-only; share the generated PDF/JSON manually if needed.");
   }
@@ -63,6 +83,10 @@ async function main() {
 
   const window = deriveWindow(args);
   const privacy = makePrivacy(args.org);
+  const participantHash = privacy.stableParticipantHash(
+    process.env.WONKA_AUDIT_PARTICIPANT_ID,
+    process.env.WONKA_AUDIT_TENANT_SECRET
+  );
   const context = {
     window,
     privacy,
@@ -95,6 +119,7 @@ async function main() {
     schema_version: AUDIT_SCHEMA_VERSION,
     generated_at: new Date().toISOString(),
     org_slug: args.org,
+    participant_hash: participantHash || undefined,
     team_slug: args.team || undefined,
     period: args.period,
     training_date: args.trainingDate || undefined,
@@ -166,6 +191,11 @@ async function main() {
       sha256: createHash("sha256").update(readFileSync(path)).digest("hex")
     }))
   }, null, 2));
+  if (args.signPrivateKey) {
+    const signaturePath = resolve(outDir, "wonka-ai-audit-manifest.signature.json");
+    writeFileSync(signaturePath, JSON.stringify(signManifest(manifestPath, resolve(args.signPrivateKey)), null, 2));
+    console.log(`Signature: ${signaturePath}`);
+  }
   console.log("");
   console.log(`Local page: ${htmlPath}`);
   console.log(`Wrapped card: ${cardPath}`);
