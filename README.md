@@ -149,7 +149,7 @@ npx wonka-audit --share
 ```
 
 That is the normal sharing command. The private files and the public website are written to separate folders automatically.
-The local website opens automatically in your browser. It is still private until you deliberately host or publish it.
+The local website opens automatically in your browser. It is still private until you deliberately host or publish it. The page explains the observed usage mix, strongest practice signal, clearest gap and recommended next practices. Its LinkedIn button copies the complete post, then opens LinkedIn: paste once in the composer to publish it.
 
 To rebuild a website from an existing export, the optional advanced form remains available:
 
