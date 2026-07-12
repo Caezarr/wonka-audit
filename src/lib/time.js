@@ -2,8 +2,8 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 
 export function deriveWindow(args) {
   if (args.since || args.until) {
-    const start = args.since ? new Date(args.since) : new Date(Date.now() - 30 * DAY_MS);
-    const end = args.until ? endOfDay(new Date(args.until)) : new Date();
+    const start = args.since ? parseDateInput(args.since) : new Date(Date.now() - 30 * DAY_MS);
+    const end = args.until ? endOfDay(parseDateInput(args.until)) : new Date();
     assertValidDate(start, "--since");
     assertValidDate(end, "--until");
     return { start, end };
@@ -15,7 +15,7 @@ export function deriveWindow(args) {
     return { start, end };
   }
 
-  const training = new Date(args.trainingDate);
+  const training = parseDateInput(args.trainingDate);
   assertValidDate(training, "--training-date");
   const period = String(args.period || "m1").toLowerCase();
   if (period === "m0") {
@@ -37,6 +37,13 @@ function endOfDay(date) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999);
 }
 
+function parseDateInput(value) {
+  const text = String(value);
+  const match = text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (match) return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  return new Date(text);
+}
+
 function assertValidDate(date, label) {
   if (Number.isNaN(date.getTime())) throw new Error(`Invalid date for ${label}`);
 }
@@ -48,4 +55,3 @@ export function inWindow(ts, window) {
 export function iso(date) {
   return date.toISOString();
 }
-

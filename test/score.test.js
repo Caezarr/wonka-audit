@@ -38,6 +38,6 @@ test("buildScore exposes directional confidence metadata", () => {
   assert.equal(score.planned_metric_count, 3);
   assert.ok(score.observed_metric_count > 10);
   assert.equal(metrics.measurement_quality.confidence, "low");
-  assert.equal(score.calibration.model, "local_individual_v2");
+  assert.equal(score.calibration.model, "local_individual_v3_directional");
   assert.ok(score.calibration.priority_levers.length > 0);
 });

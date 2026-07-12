@@ -13,6 +13,7 @@ The public npm package should contain only:
 - `src/` CLI and collectors;
 - `README.md`;
 - `SECURITY-CISO.md`.
+- `METHODOLOGY.md`;
 - `LICENSE`.
 
 It should not publish generated reports, PDFs, local audit outputs, `tmp/`, or Wonka internal PDF assets.
@@ -25,7 +26,7 @@ npm run audit:local
 npm test
 npm run pack:check
 npm pack --cache /private/tmp/wonka-npm-cache
-npx --yes ./wonka-audit-0.1.10.tgz --out ./tmp/package-smoke
+npm_config_cache=/private/tmp/wonka-npx-cache npx --yes --package=./wonka-audit-0.2.0.tgz wonka-audit --metadata-only --out ./tmp/package-smoke
 ```
 
 Check that the dry-run package does not include:
@@ -53,9 +54,9 @@ For this repository, after editing and validating:
 git status
 git add .
 git commit -m "chore: prepare npm release"
-git tag -a v0.1.10 -m "v0.1.10"
+git tag -a v0.2.0 -m "v0.2.0"
 git push origin main
-git push origin v0.1.10
+git push origin v0.2.0
 npm publish
 ```
 

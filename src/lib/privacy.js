@@ -1,10 +1,10 @@
-import { createHash } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 import { homedir } from "node:os";
 
 const SECRET_RE = /\b(api[_-]?key|secret|token|password|passwd|authorization|bearer)\b(["'\s:=]{1,4})([A-Za-z0-9_\-./+]{12,})/gi;
 
-export function makePrivacy(orgSlug) {
-  const salt = `wonka-ai-audit:${orgSlug || "local"}`;
+export function makePrivacy(orgSlug, auditSalt = randomBytes(32).toString("hex")) {
+  const salt = `wonka-ai-audit:${orgSlug || "local"}:${auditSalt}`;
   return {
     hash(value) {
       if (!value) return null;
@@ -25,4 +25,3 @@ export function makePrivacy(orgSlug) {
     }
   };
 }
-

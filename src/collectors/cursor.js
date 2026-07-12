@@ -4,9 +4,10 @@ import { homedir, platform } from "node:os";
 import { join } from "node:path";
 import { classifyPrompt } from "../lib/classify.js";
 import { inWindow } from "../lib/time.js";
+import { commonCapabilities } from "../lib/collection.js";
 
-export async function collectCursor({ window, privacy, orgSlug, teamSlug }) {
-  const dbPath = findCursorDb();
+export async function collectCursor({ window, privacy, orgSlug, teamSlug, contentInspection = true, sourcePaths = {} }) {
+  const dbPath = sourcePaths.cursorDb || findCursorDb();
   if (!dbPath) return { source: "cursor", status: "missing", sessions: [] };
   if (!sqliteAvailable()) {
     return {
@@ -22,10 +23,10 @@ export async function collectCursor({ window, privacy, orgSlug, teamSlug }) {
   const sessions = new Map();
   for (const composer of composers.values()) {
     if (!composer.createdAt || !inWindow(composer.createdAt, window)) continue;
-    sessions.set(composer.composerId, makeSession(composer, { privacy, orgSlug, teamSlug }));
+    sessions.set(composer.composerId, makeSession(composer, { privacy, orgSlug, teamSlug, contentInspection }));
   }
 
-  readBubbles(dbPath, window, (bubble) => {
+  readBubbles(dbPath, window, contentInspection, (bubble) => {
     if (!bubble.createdAt || !inWindow(bubble.createdAt, window)) return;
     let session = sessions.get(bubble.conversationId);
     if (!session) {
@@ -34,14 +35,14 @@ export async function collectCursor({ window, privacy, orgSlug, teamSlug }) {
         createdAt: bubble.createdAt,
         modelName: bubble.modelName || null
       };
-      session = makeSession(composer, { privacy, orgSlug, teamSlug });
+      session = makeSession(composer, { privacy, orgSlug, teamSlug, contentInspection });
       sessions.set(bubble.conversationId, session);
     }
     updateTime(session, bubble.createdAt);
     if (bubble.modelName) session.model_names.add(bubble.modelName);
     if (bubble.type === 1) {
       session.user_turns += 1;
-      applyPromptFeatures(session, bubble.text || "");
+      if (contentInspection) applyPromptFeatures(session, bubble.text || "");
     } else if (bubble.type === 2) {
       session.assistant_turns += 1;
     }
@@ -55,6 +56,8 @@ export async function collectCursor({ window, privacy, orgSlug, teamSlug }) {
   return {
     source: "cursor",
     status: "ready",
+    capabilities: commonCapabilities({ contentInspection, validationObservable: false }),
+    warnings: ["Cursor validation commands are not observable in the current local database schema."],
     db_detected: true,
     composer_count: composers.size,
     sessions: [...sessions.values()].map(finalizeSession)
@@ -98,8 +101,8 @@ function readComposers(dbPath) {
   return composers;
 }
 
-function readBubbles(dbPath, window, onBubble) {
-  for (const row of queryBubblesInWindow(dbPath, window)) {
+function readBubbles(dbPath, window, contentInspection, onBubble) {
+  for (const row of queryBubblesInWindow(dbPath, window, contentInspection)) {
     const parts = row.key.split(":");
     if (parts.length < 3) continue;
     const fileRefCount = Number(row.relevantFilesCount || 0) +
@@ -143,14 +146,16 @@ function queryComposerFields(dbPath) {
   return raw ? JSON.parse(raw) : [];
 }
 
-function queryBubblesInWindow(dbPath, window) {
+function queryBubblesInWindow(dbPath, window, contentInspection) {
   const start = window.start.toISOString();
   const end = window.end.toISOString();
   const sql = [
     "select key,",
     "json_extract(value, '$.type') as type,",
     "json_extract(value, '$.createdAt') as createdAt,",
-    "substr(coalesce(json_extract(value, '$.text'), ''), 1, 1200) as text,",
+    contentInspection
+      ? "substr(coalesce(json_extract(value, '$.text'), ''), 1, 1200) as text,"
+      : "'' as text,",
     "json_extract(value, '$.modelInfo.modelName') as modelName,",
     "json_extract(value, '$.tokenCount.inputTokens') as inputTokens,",
     "json_extract(value, '$.tokenCount.outputTokens') as outputTokens,",
@@ -208,7 +213,8 @@ function makeSession(composer, ctx) {
       contextualized_prompts: 0,
       constrained_prompts: 0,
       correction_prompts: 0
-    }
+    },
+    capabilities: commonCapabilities({ contentInspection: ctx.contentInspection, validationObservable: false })
   };
 }
 
@@ -237,7 +243,7 @@ function finalizeSession(s) {
     task_categories: [...s.task_categories],
     outcome: {
       has_verifiable_action: hasAction,
-      has_test_or_validation: false,
+      has_test_or_validation: null,
       likely_abandoned: s.user_turns > 0 && !hasAction && s.assistant_turns <= 1
     }
   };

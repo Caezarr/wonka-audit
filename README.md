@@ -12,6 +12,8 @@ This is not a token-consumption report. It measures whether people use AI better
 - more workflow-oriented sessions;
 - more validation before using AI output.
 
+The score is a **directional, uncalibrated coaching indicator**. It must not be used as an employee performance score or as proof that training caused a business outcome. See `METHODOLOGY.md`.
+
 ## Install And Run
 
 ```bash
@@ -33,6 +35,8 @@ wonka-ai-wrapped-card.svg
 wonka-ai-audit-report.json
 wonka-ai-audit-report.md
 linkedin-post.txt
+wonka-ai-audit-methodology.json
+wonka-ai-audit-manifest.json
 ```
 
 `index.html` is the local user-friendly recap page. It opens with a terminal-style AI Wrapped card, share actions, and plain-language levers. `wonka-ai-wrapped-card.svg` is the standalone share card. The PDF is the portable report. `linkedin-post.txt` is a short privacy-safe draft the user can copy into LinkedIn if they want to share their AI practice recap. The LinkedIn button uses a privacy-safe one-click flow: copy the post text and open LinkedIn. The JSON is useful only if the employee or client explicitly decides to share it with Wonka.
@@ -60,6 +64,15 @@ To print the privacy model:
 ```bash
 npx wonka-audit --explain-privacy
 ```
+
+Disable prompt/message classification entirely:
+
+```bash
+npx wonka-audit --metadata-only
+# equivalent: --no-content
+```
+
+This mode still processes structural metadata such as timestamps, counts, tool calls and commands locally.
 
 ## What It Reads
 
@@ -129,11 +142,19 @@ Compare two local exports:
 npx wonka-audit --compare baseline.json checkpoint.json --out ./wonka-compare
 ```
 
+Only exports with the same schema, methodology, scoring model and content mode can be compared. Collection windows must be equivalent.
+
+Aggregate compatible employee-owned exports with small-cohort suppression:
+
+```bash
+npx wonka-audit --aggregate ./approved-exports --min-cohort-size 5 --out ./aggregate
+```
+
 ## Score Calibration
 
-Current model: `local_individual_v2`.
+Current model: `local_individual_v3_directional`.
 
-The AI Practice Score is calibrated for a local individual baseline across Claude Code, Codex and Cursor.
+The AI Practice Score is a directional local individual baseline across Claude Code, Codex and Cursor. Unobservable metrics are excluded and reported as `n/a`, not scored as zero.
 
 Scale:
 

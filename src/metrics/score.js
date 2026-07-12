@@ -1,3 +1,5 @@
+import { SCORING_MODEL_VERSION } from "../lib/contracts.js";
+
 export function buildMetrics({ sessions, git }) {
   const total = sessions.length;
   const activeProjects = new Set(sessions.map((s) => s.project_label_hash).filter(Boolean));
@@ -7,11 +9,13 @@ export function buildMetrics({ sessions, git }) {
   const withRepo = count(sessions, (s) => Boolean(s.cwd_hash));
   const advanced = count(sessions, (s) => s.tool_calls > 0 || s.shell_commands_count > 0 || s.file_refs_count >= 2);
   const action = count(sessions, (s) => s.outcome?.has_verifiable_action);
-  const validation = count(sessions, (s) => s.outcome?.has_test_or_validation);
+  const validationObservable = sessions.filter((s) => s.capabilities?.validation_detection !== false);
+  const validation = count(validationObservable, (s) => s.outcome?.has_test_or_validation === true);
+  const contentObservable = sessions.filter((s) => s.capabilities?.content_classification !== false);
   const abandoned = count(sessions, (s) => s.outcome?.likely_abandoned);
   const longNoAction = count(sessions, (s) => s.duration_minutes >= 30 && !s.outcome?.has_verifiable_action);
 
-  const promptTotals = sessions.reduce((acc, s) => {
+  const promptTotals = contentObservable.reduce((acc, s) => {
     acc.user += s.user_turns || 0;
     acc.vague += s.prompt_quality?.vague_prompts || 0;
     acc.contextualized += s.prompt_quality?.contextualized_prompts || 0;
@@ -26,7 +30,7 @@ export function buildMetrics({ sessions, git }) {
     for (const c of s.task_categories || ["other"]) taskMix[c] = (taskMix[c] || 0) + 1;
     sourceMix[s.tool] = (sourceMix[s.tool] || 0) + 1;
   }
-  for (const key of Object.keys(taskMix)) taskMix[key] = round(taskMix[key] / Math.max(1, total));
+  for (const key of Object.keys(taskMix)) taskMix[key] = round(taskMix[key] / Math.max(1, contentObservable.length));
   for (const key of Object.keys(sourceMix)) sourceMix[key] = round(sourceMix[key] / Math.max(1, total));
 
   const topTaskCategories = Object.entries(taskMix)
@@ -62,26 +66,27 @@ export function buildMetrics({ sessions, git }) {
       project_bound_session_rate: rate(withRepo, total),
       file_context_rate: rate(withFile, total),
       repo_context_rate: rate(withRepo, total),
-      business_context_rate: rate(promptTotals.contextualized, promptTotals.user),
+      business_context_rate: nullableRate(promptTotals.contextualized, promptTotals.user),
       advanced_workflow_rate: rate(advanced, total),
       task_category_mix: taskMix,
       top_task_categories: topTaskCategories
     },
     interaction_quality: {
-      vague_prompt_rate: rate(promptTotals.vague, promptTotals.user),
-      contextualized_prompt_rate: rate(promptTotals.contextualized, promptTotals.user),
-      constraint_rate: rate(promptTotals.constrained, promptTotals.user),
-      correction_rate: rate(promptTotals.corrections, promptTotals.user),
+      vague_prompt_rate: nullableRate(promptTotals.vague, promptTotals.user),
+      contextualized_prompt_rate: nullableRate(promptTotals.contextualized, promptTotals.user),
+      constraint_rate: nullableRate(promptTotals.constrained, promptTotals.user),
+      correction_rate: nullableRate(promptTotals.corrections, promptTotals.user),
       abandoned_session_rate: rate(abandoned, total),
       iteration_count_avg: total ? round(promptTotals.user / total) : 0
     },
     verifiable_impact: {
       tool_action_rate: rate(action, total),
-      test_run_rate: rate(count(sessions, (s) => s.test_commands_count > 0), total),
-      validation_rate: rate(validation, total),
+      test_run_rate: nullableRate(count(validationObservable, (s) => s.test_commands_count > 0), validationObservable.length),
+      validation_rate: nullableRate(validation, validationObservable.length),
+      validation_observable_sessions: validationObservable.length,
       commit_after_ai_rate: null,
       ai_assisted_commit_rate: git?.commits_in_window ? rate(git.ai_assisted_commits || 0, git.commits_in_window) : null,
-      review_workflow_rate: rate(count(sessions, (s) => (s.task_categories || []).includes("code_review")), total)
+      review_workflow_rate: nullableRate(count(contentObservable, (s) => (s.task_categories || []).includes("code_review")), contentObservable.length)
     },
     fair_usage: {
       tokens_per_action: actionsTotal ? Math.round(tokenTotal / actionsTotal) : null,
@@ -104,7 +109,7 @@ export function buildScore(metrics) {
   const impact = calibration.dimensions.impact_verifiable.score;
   const fair = calibration.dimensions.usage_juste.score;
 
-  const final = Math.round(
+  const final = metrics.adoption.total_sessions === 0 ? 0 : Math.round(
     adoption * 0.2 +
     business * 0.25 +
     interaction * 0.2 +
@@ -114,6 +119,7 @@ export function buildScore(metrics) {
 
   return {
     ai_practice_score: final,
+    status: "directional_uncalibrated",
     confidence: metrics.measurement_quality?.confidence || "low",
     observed_metric_count: metrics.measurement_quality?.observed_metric_count || 0,
     planned_metric_count: metrics.measurement_quality?.planned_metric_count || 0,
@@ -167,7 +173,7 @@ function buildMeasurementQuality({ total, activeProjects, sourceMix, metrics }) 
     planned_metric_count: planned.length,
     source_count: sourceCount,
     notes: [
-      "Score is calibrated for a local individual baseline across Claude Code, Codex and Cursor.",
+      "Score is a directional, uncalibrated local individual baseline across Claude Code, Codex and Cursor.",
       "No admin can read employee local data through this CLI; the employee owns the generated PDF/JSON.",
       "Pre-formation baseline and post-formation checkpoint should use the same local collection window."
     ]
@@ -178,8 +184,8 @@ function buildCalibration(metrics) {
   const sourceCount = Object.keys(metrics.adoption.source_mix || {}).length;
   const categoryDiversity = Object.keys(metrics.business_usage.task_category_mix || {}).length;
   const actionRate = metrics.verifiable_impact.tool_action_rate || 0;
-  const validationRate = metrics.verifiable_impact.validation_rate || 0;
-  const validatedActionRatio = actionRate ? validationRate / actionRate : 0;
+  const validationRate = metrics.verifiable_impact.validation_rate;
+  const validatedActionRatio = actionRate && validationRate !== null ? validationRate / actionRate : null;
 
   const dimensions = {
     adoption_durable: dimension("Usage consistency", [
@@ -191,32 +197,34 @@ function buildCalibration(metrics) {
     usage_metier_reel: dimension("Real work usage", [
       component("Work context", scoreRate(metrics.business_usage.project_bound_session_rate, 0.2, 0.55, 0.8), 0.25, `${pct(metrics.business_usage.project_bound_session_rate)} project-bound`),
       component("File/examples context", scoreRate(metrics.business_usage.file_context_rate, 0.15, 0.5, 0.75), 0.3, `${pct(metrics.business_usage.file_context_rate)} with files or examples`),
-      component("Context-rich prompts", scoreRate(metrics.business_usage.business_context_rate, 0.15, 0.45, 0.7), 0.2, `${pct(metrics.business_usage.business_context_rate)} context-rich prompts`),
+      componentForRate("Context-rich prompts", metrics.business_usage.business_context_rate, scoreRate, [0.15, 0.45, 0.7], 0.2, "context-rich prompts"),
       component("Workflow mode", scoreRate(metrics.business_usage.advanced_workflow_rate, 0.2, 0.55, 0.8), 0.2, `${pct(metrics.business_usage.advanced_workflow_rate)} workflow sessions`),
-      component("Use-case variety", scoreCount(categoryDiversity, 2, 5, 8), 0.05, `${categoryDiversity} detected use cases`)
+      metrics.business_usage.business_context_rate === null
+        ? { label: "Use-case variety", score: null, weight: 0.05, evidence: "not observable", available: false }
+        : component("Use-case variety", scoreCount(categoryDiversity, 2, 5, 8), 0.05, `${categoryDiversity} detected use cases`)
     ]),
     qualite_interaction: dimension("Interaction quality", [
-      component("Context-rich prompts", scoreRate(metrics.interaction_quality.contextualized_prompt_rate, 0.15, 0.45, 0.7), 0.3, `${pct(metrics.interaction_quality.contextualized_prompt_rate)} contextualized`),
-      component("Low vague prompts", scoreLowRate(metrics.interaction_quality.vague_prompt_rate, 0.15, 0.35, 0.65), 0.3, `${pct(metrics.interaction_quality.vague_prompt_rate)} vague`),
-      component("Clear constraints", scoreRate(metrics.interaction_quality.constraint_rate, 0.1, 0.35, 0.6), 0.2, `${pct(metrics.interaction_quality.constraint_rate)} constrained`),
-      component("Low corrections", scoreLowRate(metrics.interaction_quality.correction_rate, 0.05, 0.15, 0.35), 0.1, `${pct(metrics.interaction_quality.correction_rate)} corrections`),
+      componentForRate("Context-rich prompts", metrics.interaction_quality.contextualized_prompt_rate, scoreRate, [0.15, 0.45, 0.7], 0.3, "contextualized"),
+      componentForRate("Low vague prompts", metrics.interaction_quality.vague_prompt_rate, scoreLowRate, [0.15, 0.35, 0.65], 0.3, "vague"),
+      componentForRate("Clear constraints", metrics.interaction_quality.constraint_rate, scoreRate, [0.1, 0.35, 0.6], 0.2, "constrained"),
+      componentForRate("Low corrections", metrics.interaction_quality.correction_rate, scoreLowRate, [0.05, 0.15, 0.35], 0.1, "corrections"),
       component("Low abandoned sessions", scoreLowRate(metrics.interaction_quality.abandoned_session_rate, 0.03, 0.1, 0.25), 0.1, `${pct(metrics.interaction_quality.abandoned_session_rate)} abandoned`)
     ]),
     impact_verifiable: dimension("Proof and impact", [
       component("Concrete actions", scoreRate(actionRate, 0.2, 0.6, 0.85), 0.25, `${pct(actionRate)} action sessions`),
-      component("Explicit validation", scoreRate(validationRate, 0.05, 0.3, 0.55), 0.35, `${pct(validationRate)} validated`),
-      component("Tests/checks", scoreRate(metrics.verifiable_impact.test_run_rate, 0.03, 0.2, 0.4), 0.25, `${pct(metrics.verifiable_impact.test_run_rate)} with tests/checks`),
-      component("Review workflow", scoreRate(metrics.verifiable_impact.review_workflow_rate, 0.1, 0.35, 0.6), 0.15, `${pct(metrics.verifiable_impact.review_workflow_rate)} review-oriented`)
+      componentForRate("Explicit validation", validationRate, scoreRate, [0.05, 0.3, 0.55], 0.35, "validated"),
+      componentForRate("Tests/checks", metrics.verifiable_impact.test_run_rate, scoreRate, [0.03, 0.2, 0.4], 0.25, "with tests/checks"),
+      componentForRate("Review workflow", metrics.verifiable_impact.review_workflow_rate, scoreRate, [0.1, 0.35, 0.6], 0.15, "review-oriented")
     ]),
     usage_juste: dimension("Fair usage", [
       component("Low long loops", scoreLowRate(metrics.fair_usage.long_session_without_action_rate, 0.03, 0.12, 0.3), 0.45, `${pct(metrics.fair_usage.long_session_without_action_rate)} long no-action sessions`),
-      component("Proof/action balance", scoreRate(validatedActionRatio, 0.1, 0.45, 0.75), 0.35, `${pct(validatedActionRatio)} of action sessions validated`),
-      component("Cache reuse", scoreRate(metrics.fair_usage.cache_reuse_rate ?? 0, 0.1, 0.35, 0.65), 0.2, `${pct(metrics.fair_usage.cache_reuse_rate)} cache reuse`)
+      componentForRate("Proof/action balance", validationRate === null ? null : validatedActionRatio, scoreRate, [0.1, 0.45, 0.75], 0.35, "of action sessions validated"),
+      componentForRate("Cache reuse", metrics.fair_usage.cache_reuse_rate, scoreRate, [0.1, 0.35, 0.65], 0.2, "cache reuse")
     ])
   };
 
   return {
-    model: "local_individual_v2",
+    model: SCORING_MODEL_VERSION,
     scale: {
       "0": "not detected",
       "40": "needs work",
@@ -236,9 +244,12 @@ function buildCalibration(metrics) {
 }
 
 function dimension(label, components) {
+  const available = components.filter((component) => component.available !== false);
+  const weight = available.reduce((sum, component) => sum + component.weight, 0);
   return {
     label,
-    score: clampScore(components.reduce((sum, c) => sum + c.score * c.weight, 0)),
+    score: weight ? clampScore(available.reduce((sum, c) => sum + c.score * c.weight, 0) / weight) : null,
+    available_weight: round(weight),
     components
   };
 }
@@ -248,8 +259,16 @@ function component(label, score, weight, evidence) {
     label,
     score: clampScore(score),
     weight,
-    evidence
+    evidence,
+    available: true
   };
+}
+
+function componentForRate(label, value, scorer, thresholds, weight, suffix) {
+  if (value === null || value === undefined) {
+    return { label, score: null, weight, evidence: "not observable", available: false };
+  }
+  return component(label, scorer(value, ...thresholds), weight, `${pct(value)} ${suffix}`);
 }
 
 function scoreRate(value, poor, healthy, strong) {
@@ -280,13 +299,13 @@ function priorityLevers(metrics) {
     {
       key: "finish_with_proof",
       label: "Finish with proof",
-      score: scoreRate(metrics.verifiable_impact.validation_rate, 0.05, 0.3, 0.55),
+      score: metrics.verifiable_impact.validation_rate === null ? null : scoreRate(metrics.verifiable_impact.validation_rate, 0.05, 0.3, 0.55),
       action: "End important AI sessions with a check, test, diff review, checklist or acceptance criteria."
     },
     {
       key: "give_more_context",
       label: "Give more context",
-      score: scoreRate(metrics.interaction_quality.contextualized_prompt_rate, 0.15, 0.45, 0.7),
+      score: metrics.interaction_quality.contextualized_prompt_rate === null ? null : scoreRate(metrics.interaction_quality.contextualized_prompt_rate, 0.15, 0.45, 0.7),
       action: "Start prompts with goal, context, constraints and expected output."
     },
     {
@@ -303,6 +322,7 @@ function priorityLevers(metrics) {
     }
   ];
   return candidates
+    .filter((item) => item.score !== null)
     .map((item) => ({ ...item, score: clampScore(item.score) }))
     .sort((a, b) => a.score - b.score)
     .slice(0, 3);
@@ -334,6 +354,10 @@ function topEntry(obj) {
 
 function rate(n, d) {
   return d ? round(n / d) : 0;
+}
+
+function nullableRate(n, d) {
+  return d ? round(n / d) : null;
 }
 
 function round(n) {

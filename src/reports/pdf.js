@@ -88,7 +88,8 @@ function renderActionPage(doc, audit) {
 
 function buildEmployeeActions(m, s) {
   const actions = [];
-  if ((m.interaction_quality.contextualized_prompt_rate || 0) < 0.5 || (m.interaction_quality.vague_prompt_rate || 0) > 0.25) {
+  if ((m.interaction_quality.contextualized_prompt_rate !== null && m.interaction_quality.contextualized_prompt_rate < 0.5) ||
+      (m.interaction_quality.vague_prompt_rate !== null && m.interaction_quality.vague_prompt_rate > 0.25)) {
     actions.push({
       title: "Use a clear prompt frame",
       body: "For important requests, include objective, context, constraints, examples and expected output. This can live in Claude.md, AGENTS.md, project rules or team templates."
@@ -100,7 +101,7 @@ function buildEmployeeActions(m, s) {
       body: "Attach the relevant files, error logs, specs or repo context. Prefer concrete workflows over generic chat questions."
     });
   }
-  if ((m.verifiable_impact.validation_rate || 0) < 0.3) {
+  if (m.verifiable_impact.validation_rate !== null && m.verifiable_impact.validation_rate < 0.3) {
     actions.push({
       title: "End with verification",
       body: "Ask the AI to run or propose checks: tests, lint, typecheck, diff review, acceptance criteria or a short QA checklist."
@@ -261,7 +262,7 @@ function wrapText(input, maxChars) {
 }
 
 function pct(v) {
-  return `${Math.round((v || 0) * 100)}%`;
+  return v === null || v === undefined ? "n/a" : `${Math.round(v * 100)}%`;
 }
 
 function label(value) {

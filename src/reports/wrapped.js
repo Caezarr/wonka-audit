@@ -3,9 +3,9 @@ export function buildWrappedRecap(audit) {
   const s = audit.score;
   const score = s.ai_practice_score || 0;
   const workflowRate = m.business_usage?.advanced_workflow_rate || 0;
-  const validationRate = m.verifiable_impact?.validation_rate || 0;
-  const contextRate = m.interaction_quality?.contextualized_prompt_rate || 0;
-  const vagueRate = m.interaction_quality?.vague_prompt_rate || 0;
+  const validationRate = m.verifiable_impact?.validation_rate;
+  const contextRate = m.interaction_quality?.contextualized_prompt_rate;
+  const vagueRate = m.interaction_quality?.vague_prompt_rate;
   const fileRate = m.business_usage?.file_context_rate || 0;
   const topUseCase = label(m.wrapped_summary?.top_use_case || "general_ai_work");
   const topTool = label(m.wrapped_summary?.top_tool || "ai_tools");
@@ -113,6 +113,9 @@ function buildNextMoves(audit, rates) {
 }
 
 function metricInsight(labelText, value, good, improve) {
+  if (value === null || value === undefined) {
+    return { label: labelText, value: "n/a", level: "unavailable", sentence: "This signal was not observable in the selected privacy mode or source." };
+  }
   return {
     label: labelText,
     value: pct(value),
@@ -143,7 +146,7 @@ function rateTone(value) {
 }
 
 export function pct(v) {
-  return `${Math.round((v || 0) * 100)}%`;
+  return v === null || v === undefined ? "n/a" : `${Math.round(v * 100)}%`;
 }
 
 export function label(value) {
