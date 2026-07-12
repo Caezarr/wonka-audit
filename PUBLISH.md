@@ -25,7 +25,7 @@ npm run preview
 npm run audit:local
 npm test
 npm run pack:check
-npm pack --cache /private/tmp/wonka-npm-cache
+npm pack
 npm_config_cache=/private/tmp/wonka-npx-cache npx --yes --package=./wonka-audit-0.2.0.tgz wonka-audit --metadata-only --out ./tmp/package-smoke
 ```
 
