@@ -5,6 +5,7 @@ export function parseArgs(argv) {
     upload: false,
     includeExamples: false,
     noContent: false,
+    noOpen: false,
     metadataOnly: false,
     explainPrivacy: false,
     compare: null,
@@ -46,6 +47,7 @@ export function parseArgs(argv) {
     else if (arg === "--min-cohort-size") args.minCohortSize = Number(argv[++i]);
     else if (arg === "--include-examples") args.includeExamples = true;
     else if (arg === "--no-content") args.noContent = true;
+    else if (arg === "--no-open") args.noOpen = true;
     else if (arg === "--metadata-only") {
       args.metadataOnly = true;
       args.noContent = true;
@@ -103,6 +105,7 @@ Options:
   --include-examples     Reserved for redacted examples
   --no-content           Disable local prompt/message text classification
   --metadata-only        Alias for --no-content; do not classify prompt/message text
+  --no-open              Do not open the local share preview in a browser
   --out <path>           Output directory, default: Desktop/Wonka AI Audit
 `);
 }

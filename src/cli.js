@@ -23,6 +23,7 @@ import { AUDIT_SCHEMA_VERSION, collectorMetadata, methodologyDescriptor } from "
 import { aggregateAudits, loadAuditDirectory, renderAggregateMarkdown } from "./enterprise/aggregate.js";
 import { buildPublicSharePayload, renderPublicSharePage } from "./reports/public-share.js";
 import { signManifest, verifyManifestSignature } from "./lib/signature.js";
+import { openLocalFile } from "./lib/open.js";
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
@@ -66,7 +67,7 @@ async function main() {
   if (typeof args.share === "string") {
     const audit = loadAudit(resolve(args.share));
     const outDir = resolve(args.out || "wonka-audit-share");
-    writeShareBundle(audit, outDir, args.shareUrl);
+    writeShareBundle(audit, outDir, args.shareUrl, args.noOpen);
     return;
   }
   if (args.upload) {
@@ -190,7 +191,7 @@ async function main() {
     writeFileSync(signaturePath, JSON.stringify(signManifest(manifestPath, resolve(args.signPrivateKey)), null, 2));
     console.log(`Signature: ${signaturePath}`);
   }
-  if (args.share === true) writeShareBundle(audit, resolve(outDir, "public-share"), args.shareUrl);
+  if (args.share === true) writeShareBundle(audit, resolve(outDir, "public-share"), args.shareUrl, args.noOpen);
   console.log("");
   console.log(`Local page: ${htmlPath}`);
   console.log(`Wrapped card: ${cardPath}`);
@@ -202,13 +203,19 @@ async function main() {
   console.log(`AI Practice Score: ${score.ai_practice_score}/100`);
 }
 
-function writeShareBundle(audit, outDir, shareUrl) {
+function writeShareBundle(audit, outDir, shareUrl, noOpen = false) {
   if (!existsSync(outDir)) mkdirSync(outDir, { recursive: true });
   writeFileSync(resolve(outDir, "index.html"), renderPublicSharePage(audit, { shareUrl: shareUrl || "" }));
   writeFileSync(resolve(outDir, "share-card.svg"), renderWrappedCardSvg(audit));
   writeFileSync(resolve(outDir, "public-share.json"), JSON.stringify(buildPublicSharePayload(audit), null, 2));
-  console.log(`Public share website: ${outDir}`);
+  const pagePath = resolve(outDir, "index.html");
+  console.log(`Share preview: ${pagePath}`);
   console.log("Only the public recap is included; private audit details stay outside this folder.");
+  console.log("Local preview only: no public URL has been created yet.");
+  if (!noOpen && process.stdout.isTTY && !process.env.CI) {
+    console.log("Opening the preview in your browser...");
+    openLocalFile(pagePath);
+  }
 }
 
 function coverage(result) {

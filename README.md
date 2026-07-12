@@ -149,6 +149,7 @@ npx wonka-audit --share
 ```
 
 That is the normal sharing command. The private files and the public website are written to separate folders automatically.
+The local website opens automatically in your browser. It is still private until you deliberately host or publish it.
 
 To rebuild a website from an existing export, the optional advanced form remains available:
 
