@@ -29,3 +29,9 @@ test("parseArgs supports public share and signature workflows", () => {
   assert.equal(args.shareUrl, "https://example.com/report/");
   assert.equal(args.signPrivateKey, "private.pem");
 });
+
+test("parseArgs supports one-flag share generation", () => {
+  const args = parseArgs(["--share", "--out", "report"]);
+  assert.equal(args.share, true);
+  assert.equal(args.out, "report");
+});

@@ -63,16 +63,10 @@ async function main() {
     console.log(`${aggregate.suppressed_cohorts.length} cohort(s) suppressed below the privacy threshold`);
     return;
   }
-  if (args.share) {
+  if (typeof args.share === "string") {
     const audit = loadAudit(resolve(args.share));
     const outDir = resolve(args.out || "wonka-audit-share");
-    if (!existsSync(outDir)) mkdirSync(outDir, { recursive: true });
-    writeFileSync(resolve(outDir, "index.html"), renderPublicSharePage(audit, { shareUrl: args.shareUrl || "" }));
-    writeFileSync(resolve(outDir, "share-card.svg"), renderWrappedCardSvg(audit));
-    writeFileSync(resolve(outDir, "public-share.json"), JSON.stringify(buildPublicSharePayload(audit), null, 2));
-    console.log(`Public share bundle: ${outDir}`);
-    console.log("Privacy boundary: no organization, team, participant hash, prompts, paths or raw conversations exported.");
-    if (!args.shareUrl) console.log("Add --share-url after hosting to enable canonical LinkedIn previews.");
+    writeShareBundle(audit, outDir, args.shareUrl);
     return;
   }
   if (args.upload) {
@@ -196,6 +190,7 @@ async function main() {
     writeFileSync(signaturePath, JSON.stringify(signManifest(manifestPath, resolve(args.signPrivateKey)), null, 2));
     console.log(`Signature: ${signaturePath}`);
   }
+  if (args.share === true) writeShareBundle(audit, resolve(outDir, "public-share"), args.shareUrl);
   console.log("");
   console.log(`Local page: ${htmlPath}`);
   console.log(`Wrapped card: ${cardPath}`);
@@ -205,6 +200,15 @@ async function main() {
   console.log(`Methodology: ${methodologyPath}`);
   console.log(`Manifest: ${manifestPath}`);
   console.log(`AI Practice Score: ${score.ai_practice_score}/100`);
+}
+
+function writeShareBundle(audit, outDir, shareUrl) {
+  if (!existsSync(outDir)) mkdirSync(outDir, { recursive: true });
+  writeFileSync(resolve(outDir, "index.html"), renderPublicSharePage(audit, { shareUrl: shareUrl || "" }));
+  writeFileSync(resolve(outDir, "share-card.svg"), renderWrappedCardSvg(audit));
+  writeFileSync(resolve(outDir, "public-share.json"), JSON.stringify(buildPublicSharePayload(audit), null, 2));
+  console.log(`Public share website: ${outDir}`);
+  console.log("Only the public recap is included; private audit details stay outside this folder.");
 }
 
 function coverage(result) {

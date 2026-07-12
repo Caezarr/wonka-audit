@@ -5,10 +5,10 @@
 The detailed HTML, PDF, JSON and methodology remain local. Public sharing is a separate, explicit action:
 
 ```bash
-npx wonka-audit --share ./wonka-ai-audit-report.json \
-  --share-url https://reports.wonka-ai.com/s/opaque-id/ \
-  --out ./public-share
+npx wonka-audit --share
 ```
+
+This creates the private audit and a separate `public-share/` website in one run. Existing exports and canonical URLs remain available as advanced operator options.
 
 The bundle contains only:
 
