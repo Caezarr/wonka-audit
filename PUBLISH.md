@@ -27,7 +27,7 @@ npm run audit:local
 npm test
 npm run pack:check
 npm pack
-npm_config_cache=/private/tmp/wonka-npx-cache npx --yes --package=./wonka-audit-0.3.0.tgz wonka-audit --metadata-only --out ./tmp/package-smoke
+npm_config_cache=/private/tmp/wonka-npx-cache npx --yes --package=./wonka-audit-0.3.1.tgz wonka-audit --metadata-only --out ./tmp/package-smoke
 ```
 
 Check that the dry-run package does not include:
@@ -72,10 +72,10 @@ For this repository, after editing and validating:
 git status
 git add .
 git commit -m "chore: prepare npm release"
-git tag -a v0.3.0 -m "v0.3.0"
+git tag -a v0.3.1 -m "v0.3.1"
 git push origin main
-git push origin v0.3.0
-gh release create v0.3.0 --verify-tag --generate-notes
+git push origin v0.3.1
+gh release create v0.3.1 --verify-tag --generate-notes
 ```
 
 Verify:
