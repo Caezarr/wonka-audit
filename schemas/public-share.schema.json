@@ -5,7 +5,7 @@
   "type": "object",
   "required": ["share_schema_version", "period", "score", "score_status", "confidence", "profile", "signals", "disclosure"],
   "properties": {
-    "share_schema_version": { "const": "1.0" },
+    "share_schema_version": { "const": "1.1" },
     "score": { "type": "number", "minimum": 0, "maximum": 100 },
     "profile": { "type": "string" },
     "signals": { "type": "object" },

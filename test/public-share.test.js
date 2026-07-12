@@ -28,6 +28,9 @@ const audit = {
 test("public share payload excludes enterprise and participant identifiers", () => {
   const payload = buildPublicSharePayload(audit);
   const serialized = JSON.stringify(payload);
+  assert.equal(payload.share_schema_version, "1.1");
+  assert.match(payload.diagnosis.body, /18 conversations across 8 active days/);
+  assert.equal(payload.usage.primary_tool, "Codex");
   assert.equal(serialized.includes("secret-client"), false);
   assert.equal(serialized.includes("secret-team"), false);
   assert.equal(serialized.includes("secret-participant"), false);
@@ -37,6 +40,8 @@ test("public page includes social metadata and escapes untrusted URLs", () => {
   const html = renderPublicSharePage(audit, { shareUrl: "https://reports.example.com/u/abc/" });
   assert.match(html, /property="og:title"/);
   assert.match(html, /linkedin\.com\/sharing\/share-offsite/);
+  assert.match(html, /Copy post & open LinkedIn/);
+  assert.match(html, /WHAT YOU ACTUALLY USE AI FOR/);
   assert.match(html, /share-card\.svg/);
   assert.doesNotMatch(html, /secret-client|secret-team|secret-participant/);
   assert.throws(() => renderPublicSharePage(audit, { shareUrl: "javascript:alert(1)" }), /http or https/);

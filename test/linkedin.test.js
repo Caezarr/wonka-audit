@@ -17,7 +17,7 @@ test("renderLinkedInPost creates a privacy-safe share draft", () => {
   });
 
   assert.match(post, /AI Practice Score: 64\/100/);
-  assert.match(post, /Top use case: Code Review/);
+  assert.match(post, /Main uses: Code Review/);
   assert.match(post, /No prompts, code, secrets, or raw conversations included/);
   assert.doesNotMatch(post, /undefined/);
 });

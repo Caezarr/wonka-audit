@@ -41,4 +41,6 @@ The recommended hosted product should accept only `public-share.json`, never the
 
 ## LinkedIn limitation
 
+LinkedIn does not support pre-filling arbitrary post text from a normal web link. The page therefore uses the shortest reliable flow: one click copies the complete privacy-safe draft and opens LinkedIn; the user pastes it into the composer. When a canonical `--share-url` is present, LinkedIn also receives that public URL for its link preview.
+
 The local bundle includes an SVG card. LinkedIn preview reliability is best with a server-rendered 1200×627 PNG. The future share service should render that PNG from the same public payload and expose it as `og:image`.
