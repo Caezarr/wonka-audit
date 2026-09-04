@@ -21,7 +21,9 @@
     "schemas",
     "docs",
     "README.md",
+    "SECURITY.md",
     "SECURITY-CISO.md",
+    "CHANGELOG.md",
     "METHODOLOGY.md",
     "LICENSE"
   ],
