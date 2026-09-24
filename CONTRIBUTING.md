@@ -14,6 +14,8 @@ Before submitting a pull request, run:
 npm test
 ```
 
+The test suite includes a golden fixture (`test/fixtures/export-shape.json`) that validates the structure and required keys of CLI export output. This fixture ensures backward compatibility and serves as a reference for the expected export format.
+
 To preview source detection without processing:
 
 ```bash
