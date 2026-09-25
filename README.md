@@ -305,3 +305,11 @@ https://github.com/Caezarr/wonka-audit
 ## Security Notes
 
 See [SECURITY-CISO.md](./SECURITY-CISO.md).
+
+## Contributing
+
+Contributions are welcome. Please review our community guidelines:
+
+- [Code of Conduct](./CODE_OF_CONDUCT.md)
+- [Security Policy](./SECURITY.md)
+- [Support Resources](./.github/SUPPORT.md)
