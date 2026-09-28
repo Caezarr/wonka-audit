@@ -1,13 +1,11 @@
 # Support
 
-## Bugs and feature requests
+**See [SUPPORT.md](../SUPPORT.md) for complete support resources.**
 
-File a [GitHub Issue](https://github.com/Caezarr/wonka-audit/issues). Include audit stage (export, KPI, report) and sample anonymized input if relevant.
+This includes:
 
-## Security vulnerabilities
-
-Use [GitHub Security Advisories](https://github.com/Caezarr/wonka-audit/security/advisories/new) — never paste client exports with PII in public issues. See [SECURITY.md](../SECURITY.md).
-
-## Questions
-
-Best-effort only; no support SLA for this personal audit toolkit.
+- CLI installation and sample exports
+- Bug reports and feature requests
+- Security vulnerability reporting
+- Contact information
+- Community guidelines
