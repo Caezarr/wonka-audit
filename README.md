@@ -312,4 +312,4 @@ Contributions are welcome. Please review our community guidelines:
 
 - [Code of Conduct](./CODE_OF_CONDUCT.md)
 - [Security Policy](./SECURITY.md)
-- [Support Resources](./.github/SUPPORT.md)
+- [Support Resources](./SUPPORT.md)
