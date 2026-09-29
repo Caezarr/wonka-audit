@@ -302,6 +302,10 @@ https://github.com/Caezarr/wonka-audit
 - Git correlation is intentionally basic and local.
 - The report is strongest when run over a meaningful activity window.
 
+## Documentation
+
+For detailed specifications, operator guides, and deployment workflows, see the [Documentation Index](./docs/INDEX.md).
+
 ## Security Notes
 
 See [SECURITY-CISO.md](./SECURITY-CISO.md).
