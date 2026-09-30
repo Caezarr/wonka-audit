@@ -54,7 +54,9 @@ When reporting bugs, please include:
 - Audit stage (export, KPI calculation, report generation)
 - Platform (macOS, Linux, Windows)
 - Node version
-- Sample anonymized input if relevant (never paste raw exports with PII)
+- Sample anonymized input if relevant
+
+**Important:** Never paste raw transcripts, logs, or exports that may contain API tokens, credentials, or PII. Use `--metadata-only` mode or thoroughly redact sensitive values before sharing. See [SECURITY.md](./SECURITY.md) for detailed redaction guidance.
 
 ## Security Vulnerabilities
 
