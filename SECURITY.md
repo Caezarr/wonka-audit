@@ -14,6 +14,29 @@ If you discover a security vulnerability in `wonka-audit`, please report it thro
 
 We will respond to security reports as quickly as possible and coordinate a fix and disclosure timeline.
 
+### What NOT to Include in Security Reports
+
+When reporting security issues or filing bug reports:
+
+**Never paste raw transcripts, logs, or tool outputs that may contain:**
+
+- API keys, tokens, or authentication credentials
+- Access tokens from Claude, Codex, Cursor, or other AI tools
+- Environment variables or secrets
+- Session identifiers or authentication cookies
+- Private keys or certificates
+- Database connection strings
+- Internal URLs or endpoints
+
+**Preferred redaction:**
+
+1. **For code examples:** Replace sensitive values with placeholders like `[REDACTED-TOKEN]` or `***`
+2. **For JSON exports:** Remove or mask all `token`, `key`, `secret`, and `credential` fields before sharing
+3. **For logs:** Use `--metadata-only` mode to generate structure-only exports without content
+4. **For error messages:** Redact file paths, usernames, and any identifiable information
+
+If you need to share an example that demonstrates the issue, use synthetic data or thoroughly sanitized samples. When in doubt, describe the issue in words rather than pasting raw output.
+
 ## Threat Model
 
 `wonka-audit` is a **local-first** audit tool. By design:
