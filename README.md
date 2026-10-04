@@ -306,6 +306,8 @@ https://github.com/Caezarr/wonka-audit
 
 For detailed specifications, operator guides, and deployment workflows, see the [Documentation Index](./docs/INDEX.md).
 
+For common questions about goals, security, privacy, and deployment, see the [FAQ](./docs/FAQ.md).
+
 ## Security Notes
 
 See [SECURITY-CISO.md](./SECURITY-CISO.md).
