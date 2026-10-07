@@ -1,0 +1,393 @@
+{
+  "schema_version": "2.0",
+  "generated_at": "2026-10-07T07:02:05.875Z",
+  "org_slug": "local",
+  "period": "baseline",
+  "collection_window": {
+    "start": "1990-01-01T00:00:00.000Z",
+    "end": "1990-01-02T23:59:59.999Z"
+  },
+  "privacy": {
+    "content_uploaded": false,
+    "examples_included": false,
+    "hashing": "sha256_with_ephemeral_audit_salt",
+    "local_content_inspection": false,
+    "raw_content_exported": false
+  },
+  "methodology": {
+    "methodology_version": "2026.07",
+    "session_schema_version": "1.0",
+    "scoring_model_version": "local_individual_v3_directional",
+    "score_status": "directional_uncalibrated",
+    "content_inspection": false,
+    "comparability_key": "2.0:2026.07:local_individual_v3_directional:metadata",
+    "limitations": [
+      "The score is directional and has not been empirically calibrated against business outcomes.",
+      "Source capabilities differ; unavailable signals are excluded rather than scored as zero.",
+      "A change in score is an observed association, not proof that training caused the change."
+    ]
+  },
+  "collectors": {
+    "claude_code": {
+      "collector_version": "1.0",
+      "status": "missing",
+      "capabilities": {},
+      "warnings": []
+    },
+    "codex": {
+      "collector_version": "1.0",
+      "status": "missing",
+      "capabilities": {},
+      "warnings": []
+    },
+    "cursor": {
+      "collector_version": "1.0",
+      "status": "missing",
+      "capabilities": {},
+      "warnings": []
+    },
+    "git": {
+      "collector_version": "1.0",
+      "status": "ready",
+      "capabilities": {
+        "content_classification": false,
+        "validation_detection": false,
+        "token_usage": false,
+        "project_context": true
+      },
+      "warnings": []
+    }
+  },
+  "source_coverage": {
+    "claude_code": {
+      "status": "missing",
+      "sessions_detected": 0,
+      "capabilities": {},
+      "warnings": []
+    },
+    "cursor": {
+      "status": "missing",
+      "sessions_detected": 0,
+      "capabilities": {},
+      "warnings": []
+    },
+    "codex": {
+      "status": "missing",
+      "sessions_detected": 0,
+      "capabilities": {},
+      "warnings": []
+    },
+    "git": {
+      "status": "ready",
+      "repos_detected": 1,
+      "commits_in_window": 0
+    }
+  },
+  "metrics": {
+    "measurement_quality": {
+      "confidence": "low",
+      "observed_metric_count": 9,
+      "planned_metric_count": 3,
+      "source_count": 0,
+      "notes": [
+        "Score is a directional, uncalibrated local individual baseline across Claude Code, Codex and Cursor.",
+        "No admin can read employee local data through this CLI; the employee owns the generated PDF/JSON.",
+        "Pre-formation baseline and post-formation checkpoint should use the same local collection window."
+      ]
+    },
+    "wrapped_summary": {
+      "conversations": 0,
+      "messages": 0,
+      "avg_messages_per_conversation": 0,
+      "free_chat_rate": 0,
+      "workflow_or_agent_rate": 0,
+      "tools_connected_count": 0,
+      "top_tool": null,
+      "top_use_case": "other",
+      "longest_conversation_minutes": 0,
+      "longest_conversation_label": "0 min"
+    },
+    "adoption": {
+      "total_sessions": 0,
+      "active_days": 0,
+      "active_project_count": 0,
+      "source_mix": {}
+    },
+    "business_usage": {
+      "project_bound_session_rate": 0,
+      "file_context_rate": 0,
+      "repo_context_rate": 0,
+      "business_context_rate": null,
+      "advanced_workflow_rate": 0,
+      "task_category_mix": {},
+      "top_task_categories": []
+    },
+    "interaction_quality": {
+      "vague_prompt_rate": null,
+      "contextualized_prompt_rate": null,
+      "constraint_rate": null,
+      "correction_rate": null,
+      "abandoned_session_rate": 0,
+      "iteration_count_avg": 0
+    },
+    "verifiable_impact": {
+      "tool_action_rate": 0,
+      "test_run_rate": null,
+      "validation_rate": null,
+      "validation_observable_sessions": 0,
+      "commit_after_ai_rate": null,
+      "ai_assisted_commit_rate": null,
+      "review_workflow_rate": null
+    },
+    "fair_usage": {
+      "tokens_per_action": null,
+      "tokens_per_validated_session": null,
+      "long_session_without_action_rate": 0,
+      "premium_model_simple_task_rate": null,
+      "cache_reuse_rate": null
+    }
+  },
+  "score": {
+    "ai_practice_score": 0,
+    "status": "directional_uncalibrated",
+    "confidence": "low",
+    "observed_metric_count": 9,
+    "planned_metric_count": 3,
+    "calibration": {
+      "model": "local_individual_v3_directional",
+      "scale": {
+        "0": "not detected",
+        "40": "needs work",
+        "70": "healthy",
+        "90": "strong"
+      },
+      "score_weights": {
+        "adoption_durable": 0.2,
+        "usage_metier_reel": 0.25,
+        "qualite_interaction": 0.2,
+        "impact_verifiable": 0.25,
+        "usage_juste": 0.1
+      },
+      "dimensions": {
+        "adoption_durable": {
+          "label": "Usage consistency",
+          "score": 0,
+          "available_weight": 1,
+          "components": [
+            {
+              "label": "Active days",
+              "score": 0,
+              "weight": 0.35,
+              "evidence": "0 active days",
+              "available": true
+            },
+            {
+              "label": "Conversation volume",
+              "score": 0,
+              "weight": 0.25,
+              "evidence": "0 conversations",
+              "available": true
+            },
+            {
+              "label": "Tool coverage",
+              "score": 0,
+              "weight": 0.2,
+              "evidence": "0 tools detected",
+              "available": true
+            },
+            {
+              "label": "Project breadth",
+              "score": 0,
+              "weight": 0.2,
+              "evidence": "0 project contexts",
+              "available": true
+            }
+          ]
+        },
+        "usage_metier_reel": {
+          "label": "Real work usage",
+          "score": 0,
+          "available_weight": 0.75,
+          "components": [
+            {
+              "label": "Work context",
+              "score": 0,
+              "weight": 0.25,
+              "evidence": "0% project-bound",
+              "available": true
+            },
+            {
+              "label": "File/examples context",
+              "score": 0,
+              "weight": 0.3,
+              "evidence": "0% with files or examples",
+              "available": true
+            },
+            {
+              "label": "Context-rich prompts",
+              "score": null,
+              "weight": 0.2,
+              "evidence": "not observable",
+              "available": false
+            },
+            {
+              "label": "Workflow mode",
+              "score": 0,
+              "weight": 0.2,
+              "evidence": "0% workflow sessions",
+              "available": true
+            },
+            {
+              "label": "Use-case variety",
+              "score": null,
+              "weight": 0.05,
+              "evidence": "not observable",
+              "available": false
+            }
+          ]
+        },
+        "qualite_interaction": {
+          "label": "Interaction quality",
+          "score": 100,
+          "available_weight": 0.1,
+          "components": [
+            {
+              "label": "Context-rich prompts",
+              "score": null,
+              "weight": 0.3,
+              "evidence": "not observable",
+              "available": false
+            },
+            {
+              "label": "Low vague prompts",
+              "score": null,
+              "weight": 0.3,
+              "evidence": "not observable",
+              "available": false
+            },
+            {
+              "label": "Clear constraints",
+              "score": null,
+              "weight": 0.2,
+              "evidence": "not observable",
+              "available": false
+            },
+            {
+              "label": "Low corrections",
+              "score": null,
+              "weight": 0.1,
+              "evidence": "not observable",
+              "available": false
+            },
+            {
+              "label": "Low abandoned sessions",
+              "score": 100,
+              "weight": 0.1,
+              "evidence": "0% abandoned",
+              "available": true
+            }
+          ]
+        },
+        "impact_verifiable": {
+          "label": "Proof and impact",
+          "score": 0,
+          "available_weight": 0.25,
+          "components": [
+            {
+              "label": "Concrete actions",
+              "score": 0,
+              "weight": 0.25,
+              "evidence": "0% action sessions",
+              "available": true
+            },
+            {
+              "label": "Explicit validation",
+              "score": null,
+              "weight": 0.35,
+              "evidence": "not observable",
+              "available": false
+            },
+            {
+              "label": "Tests/checks",
+              "score": null,
+              "weight": 0.25,
+              "evidence": "not observable",
+              "available": false
+            },
+            {
+              "label": "Review workflow",
+              "score": null,
+              "weight": 0.15,
+              "evidence": "not observable",
+              "available": false
+            }
+          ]
+        },
+        "usage_juste": {
+          "label": "Fair usage",
+          "score": 100,
+          "available_weight": 0.45,
+          "components": [
+            {
+              "label": "Low long loops",
+              "score": 100,
+              "weight": 0.45,
+              "evidence": "0% long no-action sessions",
+              "available": true
+            },
+            {
+              "label": "Proof/action balance",
+              "score": null,
+              "weight": 0.35,
+              "evidence": "not observable",
+              "available": false
+            },
+            {
+              "label": "Cache reuse",
+              "score": null,
+              "weight": 0.2,
+              "evidence": "not observable",
+              "available": false
+            }
+          ]
+        }
+      },
+      "priority_levers": [
+        {
+          "key": "use_real_material",
+          "label": "Use real work material",
+          "score": 0,
+          "action": "Attach the relevant file, example, error, spec or previous version."
+        },
+        {
+          "key": "move_to_workflow",
+          "label": "Move from chat to workflow",
+          "score": 0,
+          "action": "Ask AI to plan, draft, review, improve and package the result."
+        }
+      ]
+    },
+    "dimensions": {
+      "adoption_durable": 0,
+      "usage_metier_reel": 0,
+      "qualite_interaction": 100,
+      "impact_verifiable": 0,
+      "usage_juste": 100
+    },
+    "interpretation": "No local AI sessions were detected in the selected window."
+  },
+  "recommendations": [
+    {
+      "priority": "medium",
+      "title": "Passer du chat au workflow",
+      "body": "Encourager les usages avec fichiers, repo, outils et workflows multi-etapes. Le but est plus de travail verifiable, pas plus de messages.",
+      "target_metric": "advanced_workflow_rate"
+    },
+    {
+      "priority": "medium",
+      "title": "Augmenter le contexte fourni",
+      "body": "Apprendre aux equipes a attacher fichiers, erreurs, specs et contraintes au lieu de poser des demandes generiques.",
+      "target_metric": "file_context_rate"
+    }
+  ]
+}
