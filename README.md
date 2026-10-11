@@ -304,6 +304,8 @@ https://github.com/Caezarr/wonka-audit
 
 ## Documentation
 
+For AI tools and agents, see [llms.txt](./llms.txt) for a structured overview.
+
 For detailed specifications, operator guides, and deployment workflows, see the [Documentation Index](./docs/INDEX.md).
 
 For common questions about goals, security, privacy, and deployment, see the [FAQ](./docs/FAQ.md).
