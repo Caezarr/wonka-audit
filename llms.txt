@@ -1,0 +1,52 @@
+# Wonka AI Usage Audit
+
+Local AI usage audit CLI for Claude Code, Codex, Cursor and local Git signals.
+
+## What It Does
+
+Creates pre-training and post-training usage baselines to measure whether AI habits improved after Wonka workshops. Measures real work context, workflow orientation, and validation practices — not token consumption.
+
+## Stack
+
+- Node.js >=18 (ES modules)
+- Zero runtime dependencies
+- Python 3 (optional, for premium PDF reports)
+
+## Key Entrypoints
+
+- `src/cli.js` — main CLI entry point
+- `src/collectors/` — data collectors (claude-code.js, codex.js, cursor.js, git.js)
+- `src/metrics/score.js` — scoring model and KPI calculation
+- `src/reports/` — report generators (pdf.js, html.js, markdown.js, linkedin.js, card-svg.js)
+- `scripts/` — Python report builders (build_premium_report.py, build_client_report.py)
+- `schemas/` — JSON schemas (audit-export.schema.json, enterprise-aggregate.schema.json)
+
+## Install And Run
+
+```bash
+npx wonka-audit
+```
+
+## Common Commands
+
+```bash
+npx wonka-audit --preview              # Preview detected sources
+npx wonka-audit --explain-privacy      # Print privacy model
+npx wonka-audit --out ./wonka-audit    # Custom output directory
+npx wonka-audit --share                # Generate private report + public website
+```
+
+## Documentation
+
+- [README.md](./README.md) — full usage guide, commands, privacy model
+- [SECURITY.md](./SECURITY.md) — security policy, vulnerability reporting
+- [SUPPORT.md](./SUPPORT.md) — support resources, bug reports, contact
+- [METHODOLOGY.md](./METHODOLOGY.md) — scoring methodology and calibration
+
+## Privacy Model
+
+Local-first. No automatic upload. Users own their generated reports. See README for details.
+
+## Repository
+
+https://github.com/Caezarr/wonka-audit
