@@ -2,9 +2,14 @@ import { execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { homedir, platform } from "node:os";
 import { join } from "node:path";
-import { classifyPrompt } from "../lib/classify.js";
-import { inWindow } from "../lib/time.js";
 import { commonCapabilities } from "../lib/collection.js";
+import {
+  applyPromptFeatures,
+  createSession,
+  finalizeSession as finalizeNormalizedSession,
+  updateTime
+} from "../lib/session.js";
+import { inWindow } from "../lib/time.js";
 
 export async function collectCursor({ window, privacy, orgSlug, teamSlug, contentInspection = true, sourcePaths = {} }) {
   const dbPath = sourcePaths.cursorDb || findCursorDb();
@@ -182,73 +187,6 @@ function queryBubblesInWindow(dbPath, window, contentInspection) {
   return raw ? JSON.parse(raw) : [];
 }
 
-function makeSession(composer, ctx) {
-  return {
-    session_id_hash: ctx.privacy.hash(`cursor:${composer.composerId}`),
-    tool: "cursor",
-    user_hash: null,
-    org_slug: ctx.orgSlug,
-    team_slug: ctx.teamSlug,
-    started_at_ms: composer.createdAt || Date.now(),
-    ended_at_ms: composer.createdAt || Date.now(),
-    cwd_hash: null,
-    project_label_hash: null,
-    model_names: new Set(composer.modelName ? [composer.modelName] : []),
-    input_tokens: 0,
-    output_tokens: 0,
-    cache_read_tokens: 0,
-    cache_write_tokens: 0,
-    user_turns: 0,
-    assistant_turns: 0,
-    tool_calls: 0,
-    file_refs_count: 0,
-    file_ext_counts: {},
-    shell_commands_count: 0,
-    test_commands_count: 0,
-    validation_commands_count: 0,
-    git_actions_count: 0,
-    task_categories: new Set(),
-    prompt_quality: {
-      vague_prompts: 0,
-      contextualized_prompts: 0,
-      constrained_prompts: 0,
-      correction_prompts: 0
-    },
-    capabilities: commonCapabilities({ contentInspection: ctx.contentInspection, validationObservable: false })
-  };
-}
-
-function updateTime(session, ts) {
-  session.started_at_ms = Math.min(session.started_at_ms, ts);
-  session.ended_at_ms = Math.max(session.ended_at_ms, ts);
-}
-
-function applyPromptFeatures(session, text) {
-  const features = classifyPrompt(text);
-  for (const c of features.categories) session.task_categories.add(c);
-  if (features.vague) session.prompt_quality.vague_prompts += 1;
-  if (features.contextualized) session.prompt_quality.contextualized_prompts += 1;
-  if (features.constrained) session.prompt_quality.constrained_prompts += 1;
-  if (features.correction) session.prompt_quality.correction_prompts += 1;
-}
-
-function finalizeSession(s) {
-  const hasAction = s.tool_calls > 0 || s.file_refs_count > 0;
-  return {
-    ...s,
-    started_at: new Date(s.started_at_ms).toISOString(),
-    ended_at: new Date(s.ended_at_ms).toISOString(),
-    duration_minutes: Math.max(1, Math.round((s.ended_at_ms - s.started_at_ms) / 60000)),
-    model_names: [...s.model_names],
-    task_categories: [...s.task_categories],
-    outcome: {
-      has_verifiable_action: hasAction,
-      has_test_or_validation: null,
-      likely_abandoned: s.user_turns > 0 && !hasAction && s.assistant_turns <= 1
-    }
-  };
-}
-
 function numericTs(value) {
   if (typeof value === "number" && Number.isFinite(value)) return value > 1e12 ? value : value * 1000;
   if (typeof value === "string") {
@@ -256,4 +194,28 @@ function numericTs(value) {
     return Number.isFinite(ts) ? ts : null;
   }
   return null;
+}
+
+/**
+ * @param {{ composerId: string, createdAt: number | null, modelName: string | null }} composer
+ * @param {import("../lib/session.js").SessionContext} ctx
+ */
+function makeSession(composer, ctx) {
+  return createSession({
+    key: `cursor:${composer.composerId}`,
+    tool: "cursor",
+    startedAtMs: composer.createdAt || Date.now(),
+    ctx,
+    validationObservable: false,
+    modelNames: composer.modelName ? [composer.modelName] : []
+  });
+}
+
+/** @param {import("../lib/session.js").SessionDraft} s */
+function finalizeSession(s) {
+  // Cursor's local DB does not expose shell commands, so validation is unknown (null), not false.
+  return finalizeNormalizedSession(s, {
+    hasAction: (d) => d.tool_calls > 0 || d.file_refs_count > 0,
+    hasValidation: () => null
+  });
 }
