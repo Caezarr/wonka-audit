@@ -3,13 +3,18 @@
  * Smoke: sample-export.json still has the keys the report templates expect.
  * No network. Exit 1 on shape drift (issue #14).
  */
-const fs = require("fs");
-const path = require("path");
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const samplePath = path.join(__dirname, "..", "sample-export.json");
-const raw = fs.readFileSync(samplePath, "utf8");
-const data = JSON.parse(raw);
+const samplePath = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "sample-export.json");
+const data = JSON.parse(readFileSync(samplePath, "utf8"));
 
+/**
+ * @param {any} obj
+ * @param {string} key
+ * @param {string} ctx
+ */
 function req(obj, key, ctx) {
   if (obj == null || typeof obj !== "object" || !(key in obj)) {
     throw new Error(`missing ${ctx}.${key}`);

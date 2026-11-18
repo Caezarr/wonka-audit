@@ -35,7 +35,7 @@ Check that the dry-run package does not include:
 - `out/`
 - `output/`
 - `tmp/`
-- `scripts/build_premium_report.py`
+- `scripts/delivery/build_premium_report.py`
 - generated PDFs
 - local screenshots
 

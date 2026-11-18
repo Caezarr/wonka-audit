@@ -13,7 +13,7 @@ from docx.oxml.ns import qn
 from docx.shared import Inches, Pt, RGBColor
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / "SECURITY-CISO.md"
 OUT = ROOT / "output" / "docs" / "wonka-ai-usage-audit-ciso-security-brief.docx"
 
