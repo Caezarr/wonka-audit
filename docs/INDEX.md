@@ -10,6 +10,7 @@ Welcome to the wonka-audit documentation. This index groups all operator-facing 
 
 ## Specifications
 
+- [ARCHITECTURE.md](ARCHITECTURE.md) — Pipeline, privacy enforcement points, scoring model and outputs (start here as an engineer)
 - [KPI-SPEC.md](KPI-SPEC.md) — Key performance indicators, dimensions, and scoring components
 - [TECH-SPEC.md](TECH-SPEC.md) — CLI architecture, collectors, normalization pipeline, and export schema
 - [IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md) — Development roadmap and MVP milestones
