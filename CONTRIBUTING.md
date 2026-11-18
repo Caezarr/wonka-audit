@@ -11,8 +11,11 @@ This project intentionally has **zero runtime dependencies**. Please maintain th
 Before submitting a pull request, run:
 
 ```bash
-npm test
+npm ci          # dev tooling only: ESLint and TypeScript (JSDoc checking)
+npm run check   # lint + typecheck + tests
 ```
+
+Read [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) first: collectors only parse their tool's format, `src/lib/session.js` owns the normalized session shape, renderers are pure functions, and `src/pipeline/write-outputs.js` is the only module that writes report files.
 
 The test suite includes a golden fixture (`test/fixtures/export-shape.json`) that validates the structure and required keys of CLI export output. This fixture ensures backward compatibility and serves as a reference for the expected export format.
 
@@ -32,7 +35,7 @@ All three checks should pass before opening a PR.
 
 ## Pull Request Guidelines
 
-1. **Test your changes**: Run `npm test`, `npm run preview`, and `npm run pack:check` locally
+1. **Test your changes**: Run `npm run check`, `npm run preview`, and `npm run pack:check` locally
 2. **No secrets in PRs**: Never commit API keys, tokens, credentials, or private data
 3. **Keep it dependency-free**: Do not add runtime dependencies to `package.json`
 4. **Clear commit messages**: Use descriptive commit messages that explain *why*, not just *what*
