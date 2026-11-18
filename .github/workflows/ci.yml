@@ -13,6 +13,22 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dev tooling
+        run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Typecheck (JSDoc via tsc --noEmit)
+        run: npm run typecheck
+
   verify:
     strategy:
       fail-fast: false

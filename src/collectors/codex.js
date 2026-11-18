@@ -16,6 +16,10 @@ import {
 } from "../lib/session.js";
 import { inWindow } from "../lib/time.js";
 
+/**
+ * Collect Codex sessions from the JSONL rollouts under ~/.codex/sessions.
+ * @param {import("../lib/session.js").CollectorContext} ctx
+ */
 export async function collectCodex({ window, privacy, orgSlug, teamSlug, contentInspection = true, sourcePaths = {} }) {
   const base = sourcePaths.codex || join(homedir(), ".codex", "sessions");
   if (!existsSync(base)) {

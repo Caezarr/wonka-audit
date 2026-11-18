@@ -1,4 +1,3 @@
-// @ts-check
 // Output layer: renders an audit export into the local artifact bundle and
 // writes the integrity manifest. Everything is written to a local directory;
 // nothing here performs network I/O.

@@ -30,6 +30,9 @@
   "scripts": {
     "start": "node src/cli.js",
     "test": "node --test",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json",
+    "check": "npm run lint && npm run typecheck && npm test",
     "preview": "node src/cli.js --preview",
     "audit:local": "node src/cli.js --local --out ./out",
     "compare:demo": "node src/cli.js --compare ./out/baseline/wonka-ai-audit-report.json ./out/checkpoint/wonka-ai-audit-report.json --out ./out/compare",
@@ -53,5 +56,12 @@
   },
   "engines": {
     "node": ">=18"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "18.19.130",
+    "eslint": "10.15.0",
+    "globals": "17.14.0",
+    "typescript": "5.9.3"
   }
 }

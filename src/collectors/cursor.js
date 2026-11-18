@@ -11,6 +11,10 @@ import {
 } from "../lib/session.js";
 import { inWindow } from "../lib/time.js";
 
+/**
+ * Collect Cursor sessions from its local state.vscdb via aggregate sqlite3 queries.
+ * @param {import("../lib/session.js").CollectorContext} ctx
+ */
 export async function collectCursor({ window, privacy, orgSlug, teamSlug, contentInspection = true, sourcePaths = {} }) {
   const dbPath = sourcePaths.cursorDb || findCursorDb();
   if (!dbPath) return { source: "cursor", status: "missing", sessions: [] };

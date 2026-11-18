@@ -16,6 +16,10 @@ import {
 } from "../lib/session.js";
 import { inWindow } from "../lib/time.js";
 
+/**
+ * Collect Claude Code sessions from the JSONL transcripts under ~/.claude/projects.
+ * @param {import("../lib/session.js").CollectorContext} ctx
+ */
 export async function collectClaudeCode({ window, privacy, orgSlug, teamSlug, contentInspection = true, sourcePaths = {} }) {
   const base = sourcePaths.claudeCode || join(homedir(), ".claude", "projects");
   if (!existsSync(base)) {

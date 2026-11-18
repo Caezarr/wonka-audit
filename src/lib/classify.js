@@ -1,3 +1,4 @@
+/** @type {Array<[string, RegExp]>} */
 const CATEGORY_RULES = [
   ["testing", /\b(test|pytest|jest|vitest|unit|coverage|assert|lint|typecheck|tsc)\b/i],
   ["debugging", /\b(error|bug|debug|failing|failed|stacktrace|traceback|exception|fix)\b/i],

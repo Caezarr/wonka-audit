@@ -1,4 +1,3 @@
-// @ts-check
 // Normalization layer: every collector produces sessions in this one shape.
 // Collectors only parse their tool-specific logs; building, enriching and
 // finalizing the normalized session record lives here.
@@ -221,3 +220,11 @@ export function finalizeSession(s, { hasAction, hasValidation }) {
     }
   };
 }
+
+/**
+ * Input shared by every collector.
+ * @typedef {SessionContext & {
+ *   window: { start: Date, end: Date },
+ *   sourcePaths?: { claudeCode?: string, codex?: string, cursorDb?: string }
+ * }} CollectorContext
+ */

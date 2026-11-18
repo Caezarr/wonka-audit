@@ -1,4 +1,3 @@
-// @ts-check
 // Display helpers shared by every report renderer.
 
 /**

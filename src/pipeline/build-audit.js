@@ -1,4 +1,3 @@
-// @ts-check
 // Pipeline core: collector results -> normalized sessions -> metrics -> score -> audit export.
 // No I/O happens here, so the export shape can be tested without touching the filesystem.
 
