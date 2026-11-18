@@ -1,4 +1,5 @@
-import { buildWrappedRecap, label, pct } from "./wrapped.js";
+import { escapeHtml, label, pct } from "./format.js";
+import { buildWrappedRecap } from "./wrapped.js";
 import { renderLinkedInPost } from "./linkedin.js";
 
 export function buildPublicSharePayload(audit) {
@@ -58,25 +59,25 @@ export function renderPublicSharePage(audit, { shareUrl = "" } = {}) {
   <meta name="referrer" content="no-referrer">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
   <meta name="robots" content="noindex, nofollow">
-  <title>${esc(title)}</title>
-  ${canonical ? `<link rel="canonical" href="${esc(canonical)}">` : ""}
-  <meta name="description" content="${esc(description)}">
+  <title>${escapeHtml(title)}</title>
+  ${canonical ? `<link rel="canonical" href="${escapeHtml(canonical)}">` : ""}
+  <meta name="description" content="${escapeHtml(description)}">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="${esc(title)}">
-  <meta property="og:description" content="${esc(description)}">
-  <meta property="og:image" content="${esc(imageUrl)}">
-  ${canonical ? `<meta property="og:url" content="${esc(canonical)}">` : ""}
+  <meta property="og:title" content="${escapeHtml(title)}">
+  <meta property="og:description" content="${escapeHtml(description)}">
+  <meta property="og:image" content="${escapeHtml(imageUrl)}">
+  ${canonical ? `<meta property="og:url" content="${escapeHtml(canonical)}">` : ""}
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="${esc(title)}">
-  <meta name="twitter:description" content="${esc(description)}">
-  <meta name="twitter:image" content="${esc(imageUrl)}">
+  <meta name="twitter:title" content="${escapeHtml(title)}">
+  <meta name="twitter:description" content="${escapeHtml(description)}">
+  <meta name="twitter:image" content="${escapeHtml(imageUrl)}">
   <style>${css()}</style>
 </head>
 <body>
   <main>
     <nav aria-label="Report context">
       <a href="https://wonka-ai.com">WONKA / PRACTICE AUDIT</a>
-      <span>${esc(p.period.start)} → ${esc(p.period.end)}</span>
+      <span>${escapeHtml(p.period.start)} → ${escapeHtml(p.period.end)}</span>
     </nav>
 
     <article class="ticket" aria-labelledby="share-title">
@@ -85,13 +86,13 @@ export function renderPublicSharePage(audit, { shareUrl = "" } = {}) {
       </div>
       <section class="ticket-body">
         <header>
-          <p class="kicker">${esc(p.profile)} · ${esc(p.confidence)} confidence</p>
-          <h1 id="share-title">${esc(p.diagnosis.title)}</h1>
-          <p class="headline">${esc(p.diagnosis.body)}</p>
+          <p class="kicker">${escapeHtml(p.profile)} · ${escapeHtml(p.confidence)} confidence</p>
+          <h1 id="share-title">${escapeHtml(p.diagnosis.title)}</h1>
+          <p class="headline">${escapeHtml(p.diagnosis.body)}</p>
         </header>
 
         <div class="score-row">
-          <div class="score"><strong>${esc(p.score)}</strong><span>/100<br>directional</span></div>
+          <div class="score"><strong>${escapeHtml(p.score)}</strong><span>/100<br>directional</span></div>
           <p>Not a productivity grade.<br>Not an employee ranking.<br>A starting point for better habits.</p>
         </div>
 
@@ -115,17 +116,17 @@ export function renderPublicSharePage(audit, { shareUrl = "" } = {}) {
         </section>
 
         <section class="contrast">
-          <article><span>STRONGEST SIGNAL</span><strong>${esc(p.diagnosis.strongest.label)}</strong><p>${esc(p.diagnosis.strongest.explanation)}</p></article>
-          <article><span>CLEAREST GAP</span><strong>${esc(p.diagnosis.weakest.label)}</strong><p>${esc(p.diagnosis.weakest.explanation)}</p></article>
+          <article><span>STRONGEST SIGNAL</span><strong>${escapeHtml(p.diagnosis.strongest.label)}</strong><p>${escapeHtml(p.diagnosis.strongest.explanation)}</p></article>
+          <article><span>CLEAREST GAP</span><strong>${escapeHtml(p.diagnosis.weakest.label)}</strong><p>${escapeHtml(p.diagnosis.weakest.explanation)}</p></article>
         </section>
 
         <section class="moves">
           <div class="section-label">THREE PRACTICES TO TRY NEXT</div>
-          ${p.next_moves.map((move, index) => `<article><span>0${index + 1}</span><div><strong>${esc(move.title)}</strong><p>${esc(move.body)}</p></div></article>`).join("")}
+          ${p.next_moves.map((move, index) => `<article><span>0${index + 1}</span><div><strong>${escapeHtml(move.title)}</strong><p>${escapeHtml(move.body)}</p></div></article>`).join("")}
         </section>
 
         <footer>
-          <span>Top use case · ${esc(p.top_use_case)}</span>
+          <span>Top use case · ${escapeHtml(p.top_use_case)}</span>
           <span>wonka-ai.com</span>
         </footer>
       </section>
@@ -137,9 +138,9 @@ export function renderPublicSharePage(audit, { shareUrl = "" } = {}) {
       <p class="share-help">LinkedIn blocks pre-filled post text. The button copies your complete draft, opens the composer, then you paste.</p>
     </section>
 
-    <details class="post-preview"><summary>Preview the copied LinkedIn post</summary><pre>${esc(post)}</pre></details>
+    <details class="post-preview"><summary>Preview the copied LinkedIn post</summary><pre>${escapeHtml(post)}</pre></details>
 
-    <p class="privacy">${esc(p.disclosure)}</p>
+    <p class="privacy">${escapeHtml(p.disclosure)}</p>
   </main>
   <script>
     const post = ${safeJson(post)};
@@ -169,16 +170,16 @@ export function renderPublicSharePage(audit, { shareUrl = "" } = {}) {
 function signal(label, value) {
   const display = value === null ? "n/a" : pct(value);
   const width = value === null ? 0 : Math.max(0, Math.min(100, Math.round(value * 100)));
-  return `<div><dt>${esc(label)}</dt><dd><span>${esc(display)}</span><i><b style="width:${width}%"></b></i></dd></div>`;
+  return `<div><dt>${escapeHtml(label)}</dt><dd><span>${escapeHtml(display)}</span><i><b style="width:${width}%"></b></i></dd></div>`;
 }
 
 function fact(labelText, value) {
-  return `<div><span>${esc(labelText)}</span><strong>${esc(value ?? "n/a")}</strong></div>`;
+  return `<div><span>${escapeHtml(labelText)}</span><strong>${escapeHtml(value ?? "n/a")}</strong></div>`;
 }
 
 function useCaseRow(item) {
   const width = Math.max(0, Math.min(100, Math.round((item.share || 0) * 100)));
-  return `<li><span>${esc(item.label)}</span><i><b style="width:${width}%"></b></i><strong>${esc(pct(item.share))}</strong></li>`;
+  return `<li><span>${escapeHtml(item.label)}</span><i><b style="width:${width}%"></b></i><strong>${escapeHtml(pct(item.share))}</strong></li>`;
 }
 
 function buildDiagnosis(audit, wrapped, signals, topUseCases) {
@@ -227,10 +228,6 @@ function shareAssetUrl(canonical) {
 
 function safeJson(value) {
   return JSON.stringify(value).replace(/</g, "\\u003c").replace(/>/g, "\\u003e").replace(/&/g, "\\u0026");
-}
-
-function esc(value) {
-  return String(value ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
 function css() {

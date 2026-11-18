@@ -1,4 +1,5 @@
-import { buildWrappedRecap, label, pct } from "./wrapped.js";
+import { escapeHtml, label, pct } from "./format.js";
+import { buildWrappedRecap } from "./wrapped.js";
 import { renderLinkedInPost } from "./linkedin.js";
 
 export function renderHtmlReport(audit) {
@@ -605,13 +606,4 @@ function clamp(value) {
 
 function clampPercent(value) {
   return Math.max(0, Math.min(100, Math.round(Number(value || 0))));
-}
-
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
 }
