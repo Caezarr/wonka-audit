@@ -30,12 +30,16 @@
   "scripts": {
     "start": "node src/cli.js",
     "test": "node --test",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json",
+    "check": "npm run lint && npm run typecheck && npm test",
+    "sample:check": "node scripts/dev/check-sample-export.js",
     "preview": "node src/cli.js --preview",
     "audit:local": "node src/cli.js --local --out ./out",
     "compare:demo": "node src/cli.js --compare ./out/baseline/wonka-ai-audit-report.json ./out/checkpoint/wonka-ai-audit-report.json --out ./out/compare",
-    "report:client": "python3 scripts/build_premium_report.py --input out/wonka-ai-audit-report.json --out output/pdf/wonka-ai-usage-audit-premium-report.pdf",
-    "report:technical": "python3 scripts/build_client_report.py --input out/wonka-ai-audit-report.json --base out/baseline/wonka-ai-audit-report.json --current out/checkpoint/wonka-ai-audit-report.json --out output/pdf/wonka-ai-usage-audit-client-report.pdf",
-    "go-live:check": "node scripts/go_live_check.js",
+    "report:client": "python3 scripts/delivery/build_premium_report.py --input out/wonka-ai-audit-report.json --out output/pdf/wonka-ai-usage-audit-premium-report.pdf",
+    "report:technical": "python3 scripts/delivery/build_client_report.py --input out/wonka-ai-audit-report.json --base out/baseline/wonka-ai-audit-report.json --current out/checkpoint/wonka-ai-audit-report.json --out output/pdf/wonka-ai-usage-audit-client-report.pdf",
+    "go-live:check": "node scripts/dev/go-live-check.js",
     "pack:check": "npm pack --dry-run"
   },
   "keywords": [
@@ -53,5 +57,12 @@
   },
   "engines": {
     "node": ">=18"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "18.19.130",
+    "eslint": "10.15.0",
+    "globals": "17.14.0",
+    "typescript": "5.9.3"
   }
 }

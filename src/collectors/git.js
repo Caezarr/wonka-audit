@@ -1,5 +1,9 @@
 import { execFileSync } from "node:child_process";
 
+/**
+ * Count commits by the configured Git author in the window, and how many carry an AI co-author trailer.
+ * @param {{ window: { start: Date, end: Date } }} ctx
+ */
 export async function collectGit({ window }) {
   const email = execGit(["config", "user.email"]);
   if (!email) return { source: "git", status: "unavailable", repos_detected: 0 };

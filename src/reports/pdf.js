@@ -1,4 +1,5 @@
 import { writeFileSync } from "node:fs";
+import { label, pct } from "./format.js";
 
 const PAGE = { width: 595.28, height: 841.89 };
 const MARGIN = 48;
@@ -259,16 +260,6 @@ function wrapText(input, maxChars) {
   }
   if (line) lines.push(line);
   return lines;
-}
-
-function pct(v) {
-  return v === null || v === undefined ? "n/a" : `${Math.round(v * 100)}%`;
-}
-
-function label(value) {
-  return String(value || "")
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function escapePdf(value) {

@@ -1,4 +1,5 @@
-import { buildWrappedRecap, pct } from "./wrapped.js";
+import { pct } from "./format.js";
+import { buildWrappedRecap } from "./wrapped.js";
 
 export function renderWrappedCardSvg(audit) {
   const wrapped = buildWrappedRecap(audit);

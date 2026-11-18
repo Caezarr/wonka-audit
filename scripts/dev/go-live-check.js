@@ -23,7 +23,7 @@ function fileCheck(name, path, minBytes = 1) {
 run("Preview detects local AI tools", "node", ["src/cli.js", "--preview"]);
 run("Local audit writes aggregate report", "node", ["src/cli.js", "--local", "--out", "./out"]);
 run("Employee PDF generation", "python3", [
-  "scripts/build_premium_report.py",
+  "scripts/delivery/build_premium_report.py",
   "--input",
   "out/wonka-ai-audit-report.json",
   "--out",

@@ -1,3 +1,5 @@
+import { label, pct } from "./format.js";
+
 export function renderMarkdownReport(audit) {
   const m = audit.metrics;
   const s = audit.score;
@@ -110,14 +112,4 @@ function recommendations(audit) {
     });
   }
   return out.slice(0, 3);
-}
-
-function pct(v) {
-  return v === null || v === undefined ? "n/a" : `${Math.round(v * 100)}%`;
-}
-
-function label(value) {
-  return String(value || "")
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
 }

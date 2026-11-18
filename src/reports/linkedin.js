@@ -1,3 +1,4 @@
+import { label, pct } from "./format.js";
 import { buildWrappedRecap } from "./wrapped.js";
 
 export function renderLinkedInPost(audit) {
@@ -8,11 +9,11 @@ export function renderLinkedInPost(audit) {
   const topUseCase = wrapped.top_use_case;
   const sourceCount = m.measurement_quality?.source_count || Object.keys(m.adoption?.source_mix || {}).length;
   const topUses = (m.business_usage?.top_task_categories || []).slice(0, 3)
-    .map((item) => `${title(item.category)} (${percent(item.share)})`)
+    .map((item) => `${label(item.category)} (${pct(item.share)})`)
     .join(", ");
-  const context = percent(m.interaction_quality?.contextualized_prompt_rate);
-  const workflow = percent(m.business_usage?.advanced_workflow_rate);
-  const proof = percent(m.verifiable_impact?.validation_rate);
+  const context = pct(m.interaction_quality?.contextualized_prompt_rate);
+  const workflow = pct(m.business_usage?.advanced_workflow_rate);
+  const proof = pct(m.verifiable_impact?.validation_rate);
 
   return [
     `I ran a local AI usage audit across my developer tools.`,
@@ -38,12 +39,4 @@ export function renderLinkedInPost(audit) {
     "",
     "#AI #Productivity #DeveloperTools #AIAdoption"
   ].join("\n");
-}
-
-function percent(value) {
-  return value === null || value === undefined ? "n/a" : `${Math.round(value * 100)}%`;
-}
-
-function title(value) {
-  return String(value || "").replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
 }

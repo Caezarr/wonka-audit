@@ -8,7 +8,7 @@ export function walkFiles(root, predicate, maxDepth = 5) {
 
   function walk(dir, depth) {
     if (depth > maxDepth) return;
-    let entries = [];
+    let entries;
     try {
       entries = readdirSync(dir);
     } catch {

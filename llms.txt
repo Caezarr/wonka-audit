@@ -18,7 +18,7 @@ Creates pre-training and post-training usage baselines to measure whether AI hab
 - `src/collectors/` — data collectors (claude-code.js, codex.js, cursor.js, git.js)
 - `src/metrics/score.js` — scoring model and KPI calculation
 - `src/reports/` — report generators (pdf.js, html.js, markdown.js, linkedin.js, card-svg.js)
-- `scripts/` — Python report builders (build_premium_report.py, build_client_report.py)
+- `scripts/delivery/` — Python client-delivery builders (premium PDF, technical comparison PDF, CISO brief); `scripts/dev/` — maintainer checks. See scripts/README.md
 - `schemas/` — JSON schemas (audit-export.schema.json, enterprise-aggregate.schema.json)
 
 ## Install And Run

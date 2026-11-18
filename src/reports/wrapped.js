@@ -1,3 +1,5 @@
+import { label, pct } from "./format.js";
+
 export function buildWrappedRecap(audit) {
   const m = audit.metrics;
   const s = audit.score;
@@ -143,14 +145,4 @@ function rateTone(value) {
   if (value >= 0.6) return "strong";
   if (value >= 0.35) return "developing";
   return "needs-work";
-}
-
-export function pct(v) {
-  return v === null || v === undefined ? "n/a" : `${Math.round(v * 100)}%`;
-}
-
-export function label(value) {
-  return String(value || "")
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
 }
