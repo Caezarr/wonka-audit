@@ -3,115 +3,126 @@
 [![CI](https://github.com/Caezarr/wonka-audit/actions/workflows/ci.yml/badge.svg)](https://github.com/Caezarr/wonka-audit/actions/workflows/ci.yml)
 [![npm](https://img.shields.io/npm/v/wonka-audit)](https://www.npmjs.com/package/wonka-audit)
 
-A local-first CLI that audits **how** people work with Claude Code, Codex and Cursor, not how many tokens they burn.
+Measure how people actually work with Claude Code, Codex and Cursor (practice quality, not token volume), without a single byte leaving the machine.
 
 ```bash
-npx wonka-audit
+npx wonka-audit --preview
 ```
 
 ## The problem
 
-Teams roll out coding agents and then measure adoption with seat counts and token bills. Those numbers do not tell you whether people give the model real context, work in agentic workflows, or verify what comes back. The logs that would answer this already sit on each developer's machine, and they are full of prompts, code and secrets that must never be uploaded.
+Companies buy AI coding seats and pay for enablement workshops, then judge the result with seat counts and token bills. Those numbers cannot tell you whether anyone changed how they work: whether they give the model real context, run agentic workflows on real projects, or verify what comes back. The evidence already exists in the session logs each tool writes on every developer's laptop. Nobody uses it because those logs are full of prompts, source code and secrets that must never be uploaded to a vendor dashboard.
 
-`wonka-audit` reads those logs locally, keeps only counts and salted hashes, and scores practice quality:
+## How it solves it
 
-- Is AI used on real work: project-bound sessions, file context, workflows rather than free chat?
-- Are prompts specific: context, constraints, few vague or corrective turns?
-- Is output verified: tests, linters, diffs and reviews run inside the session?
+`wonka-audit` is a local CLI. It reads those logs on the machine, reduces every session to counters and salted hashes in memory, scores practice quality, and writes a report bundle to a local folder. Run it before a workshop (baseline) and a few weeks after (checkpoint), then diff the two exports.
 
-The AI Practice Score is a **directional, uncalibrated coaching indicator**. It is not a performance metric. See [METHODOLOGY.md](./METHODOLOGY.md).
+Key design decisions:
 
-## Privacy guarantees
+- **No network path at all.** No module imports `http`, `https`, `net` or `fetch`; the only subprocesses are local `git` and `sqlite3`. `--upload` exits with an error.
+- **Raw content never leaves the collector's stack frame.** Prompt text is classified into a few booleans (vague, contextualized, constrained, corrective) and dropped. Paths are kept as file extensions or hashes. `--metadata-only` skips classification entirely.
+- **Unlinkable by default.** Hashes use a random per-run salt that is never written. Cross-run identity exists only if an operator supplies a tenant secret (HMAC).
+- **Unobservable is not zero.** A signal a tool cannot expose (for example test runs in Cursor) is excluded and the weights rebalance, so tool choice does not bias the score. Token volume is not a scored input.
+- **Comparable or refused.** Every export carries a `comparability_key` (schema, methodology and scoring versions). `--compare` and `--aggregate` refuse to mix incompatible exports, and aggregation suppresses cohorts below a minimum size.
 
-- **No network.** The CLI makes no HTTP calls and has no upload path (`--upload` exits with an error). The only subprocesses are local `git` and `sqlite3`.
-- **No content in outputs.** Prompts and answers are classified in memory into a few booleans and then discarded. Sessions store counters, file extensions and hashes. They never store text, paths or code.
-- **Unlinkable by default.** Hashes use a random per-run salt that is never written, so two audits cannot be joined. A cross-run pseudonym exists only when an operator supplies a tenant secret (HMAC).
-- **Metadata-only mode.** `--metadata-only` skips text classification entirely. For Cursor, the SQL query does not even select message text.
-- **The user owns the output.** Files land in a local folder. Sharing is a manual, explicit act. The optional public page is built from an allow-listed subset with no org, team or identifiers.
+Pipeline and privacy enforcement map: [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md).
 
-Each guarantee is mapped to the code that enforces it in [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md#privacy-model). Print the model from the CLI with `npx wonka-audit --explain-privacy`.
+## Try it
 
-## Usage
+Requires Node.js 18+. No runtime dependencies.
 
-Requires Node.js 18+. There are no runtime dependencies. Cursor support uses the system `sqlite3` binary when present.
+**On your own machine (published package).** `--preview` lists what it can see and writes nothing:
 
 ```bash
-npx wonka-audit                                        # last 30 days → Desktop/Wonka AI Audit/<run>/
-npx wonka-audit --preview                              # list detected sources, write nothing
-npx wonka-audit --metadata-only --out ./audit          # no text classification, custom folder
-npx wonka-audit --since 2026-06-01 --until 2026-06-30  # explicit window
-npx wonka-audit --share                                # also build an opt-in public recap page
-npx wonka-audit --compare baseline.json checkpoint.json --out ./compare
-npx wonka-audit --aggregate ./approved-exports --min-cohort-size 5 --out ./aggregate
-npx wonka-audit --sign-private-key ./key.pem --out ./signed
-npx wonka-audit --verify-signature ./signed/wonka-ai-audit-manifest.signature.json --public-key ./pub.pem
+npx wonka-audit --explain-privacy   # prints the privacy model
+npx wonka-audit --preview           # detected sources and session counts, no files written
+npx wonka-audit --local --no-open --out ./audit   # full report bundle in ./audit
 ```
 
-`npx wonka-audit --help` lists every flag.
+**From a fresh clone, on bundled fixtures (no personal logs needed).** The collectors resolve `~/.claude` and `~/.codex` from `HOME`, so point `HOME` at a throwaway directory seeded with the test fixtures (macOS/Linux):
 
-| Source | What is read |
-| --- | --- |
-| Claude Code | `~/.claude/projects/**/*.jsonl` |
-| Codex | `~/.codex/sessions/**/*.jsonl` |
-| Cursor | `state.vscdb` (aggregate SQL via `sqlite3`) |
-| Git | Commits by the configured author in the current repo, plus AI co-author trailers |
+```bash
+git clone https://github.com/Caezarr/wonka-audit && cd wonka-audit
+T=$(mktemp -d)
+mkdir -p $T/.claude/projects/demo $T/.codex/sessions/2026/07/01
+cp test/fixtures/claude/session.jsonl $T/.claude/projects/demo/
+cp test/fixtures/codex/2026/07/01/session.jsonl $T/.codex/sessions/2026/07/01/
+HOME=$T node src/cli.js --preview --since 2026-01-01 --until 2026-12-31
+HOME=$T node src/cli.js --local --no-open --since 2026-01-01 --until 2026-12-31 --out $T/out
+```
 
-A missing source is reported as `missing` or `unavailable` and is left out of the score. It is never counted as zero.
+Output of the last two commands (paths shortened):
 
-## Outputs
+```text
+Claude Code: ready (1 sessions)
+Codex:       ready (1 sessions)
+Cursor:      missing (0 sessions)
+Git:         unavailable (0 commits in window)
 
-Each run writes a new folder, so repeated runs never overwrite each other:
+Scanning Claude Code, Codex, Cursor and local Git signals...
+Local page: $T/out/index.html
+...
+Data export: $T/out/wonka-ai-audit-report.json
+Manifest: $T/out/wonka-ai-audit-manifest.json
+AI Practice Score: 71/100
+```
 
-| File | Purpose |
-| --- | --- |
-| `index.html` | Local recap page with the shareable "AI Wrapped" card |
-| `wonka-ai-usage-audit.pdf` | Portable report, generated without dependencies |
-| `wonka-ai-audit-report.json` | Machine-readable export ([schema](./schemas/audit-export.schema.json)) |
-| `wonka-ai-audit-report.md` | Markdown report |
-| `wonka-ai-wrapped-card.svg` | Standalone share card |
-| `linkedin-post.txt` | Privacy-safe post draft |
-| `wonka-ai-audit-methodology.json` | Versions, source coverage, privacy flags |
-| `wonka-ai-audit-manifest.json` | SHA-256 of every artifact, optionally Ed25519-signed |
+The Claude fixture contains a deliberately corrupt JSONL line; it is skipped, not fatal. Then compare two exports (here the same one against itself, so every delta is zero):
 
-Exports carry a `comparability_key` (schema, methodology and scoring versions, content mode). `--compare` and `--aggregate` refuse to mix incompatible exports, and aggregation suppresses cohorts below the threshold (minimum 3).
+```bash
+node src/cli.js --compare $T/out/wonka-ai-audit-report.json $T/out/wonka-ai-audit-report.json --out $T/cmp
+head -20 $T/cmp/wonka-ai-audit-comparison.md
+```
 
-## Scoring
+```text
+AI Practice Score moved from **71/100** to **71/100** (+0 points).
+...
+| Dimension | baseline | baseline | Delta |
+| Adoption durable | 14 | 14 | +0 |
+| Usage metier reel | 65 | 65 | +0 |
+...
+```
 
-Five weighted dimensions: usage consistency 20%, real work usage 25%, interaction quality 20%, proof and impact 25%, fair usage 10%. Signals that a source cannot observe are excluded rather than scored as zero. Component scores, weights and evidence are all in `score.calibration` in the JSON, so nothing is hidden. Details are in [METHODOLOGY.md](./METHODOLOGY.md).
+## How it works
 
-## Architecture
+1. Collectors parse each tool's local format: Claude Code and Codex JSONL (streamed line by line), Cursor's `state.vscdb` through aggregate SQL only, and `git log` for the current repo.
+2. Each collector runs in `collectSafely()`, so one broken source reports `error` and the others still run. A missing source is reported as `missing`, never scored as zero.
+3. Sessions are normalized into one shape that holds counters, extensions and hashes, never text.
+4. `buildMetrics()` and `buildScore()` produce five weighted dimensions (usage consistency 20%, real work usage 25%, interaction quality 20%, proof and impact 25%, fair usage 10%) plus confidence.
+5. A pure function assembles the versioned export; pure renderers produce HTML, Markdown, PDF (hand-written, no dependency), SVG card and a post draft; one module owns all filesystem writes and a SHA-256 manifest, optionally Ed25519-signed.
 
-Collectors (one per tool) → session normalization → metrics and score → audit export → renderers. Every stage is a plain function and one module owns all filesystem writes. See [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) for the pipeline diagram, the module map and where each privacy guarantee is enforced.
+Details: [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md). Scoring thresholds and limits: [METHODOLOGY.md](./METHODOLOGY.md).
+
+## Proof
+
+- `npm test`: 35 tests on Node's built-in runner. They cover collectors on fixtures (including corrupt JSONL), scoring, every renderer, signature round-trip, aggregation suppression, and a golden-file regression of the CLI export shape ([test/fixtures/cli-export-golden.json](./test/fixtures/cli-export-golden.json)).
+- [CI](./.github/workflows/ci.yml) runs tests, `npm pack --dry-run` and a metadata-only smoke run with a privacy assertion (`local_content_inspection === false`) on Ubuntu, macOS and Windows for Node 18, 20 and 22, plus a lint and typecheck job.
+- Export contracts are JSON Schemas in [schemas/](./schemas/). A demo payload is in [sample-export.json](./sample-export.json) ([docs/SAMPLE-EXPORT.md](./docs/SAMPLE-EXPORT.md)).
+- Each privacy guarantee is mapped to the function that enforces it in [docs/ARCHITECTURE.md#privacy-model](./docs/ARCHITECTURE.md#privacy-model). Threat model: [docs/THREAT-MODEL.md](./docs/THREAT-MODEL.md).
+
+## Limits and status
+
+- Version 0.3.x. The AI Practice Score is a directional, uncalibrated coaching indicator, not a performance metric. It has not been validated against outcomes yet ([calibration plan](./docs/CALIBRATION-PLAN.md)).
+- Cursor test and lint runs are not observable in its local database, so that signal is excluded for Cursor.
+- Git correlation covers the current repository only.
+- Dimension labels and recommendations in the generated reports are currently in French.
+- No central dashboard by design. Team views come only from `--aggregate` over exports that people chose to hand over.
 
 ## Development
 
 ```bash
 npm ci              # dev tooling only (ESLint, TypeScript for JSDoc checking)
-npm test            # node:test suite, no install required
+npm test            # node:test suite
 npm run lint
 npm run typecheck   # tsc --noEmit over JSDoc types
 npm run check       # all three
 npm run pack:check  # inspect the npm tarball
 ```
 
-CI runs the tests, the package dry-run and a privacy-asserting smoke run on Ubuntu, macOS and Windows with Node 18, 20 and 22, plus a lint and typecheck job. `scripts/` contains maintainer checks and optional Python report builders that do not ship to npm ([scripts/README.md](./scripts/README.md)).
+`scripts/` holds maintainer checks and optional Python report builders that do not ship to npm ([scripts/](./scripts/)). More docs: [docs/INDEX.md](./docs/INDEX.md), [docs/GO-LIVE.md](./docs/GO-LIVE.md) (running a baseline and checkpoint for a team), [SECURITY-CISO.md](./SECURITY-CISO.md).
 
-## Documentation
+Contributing: [CONTRIBUTING.md](./CONTRIBUTING.md). Vulnerabilities: [SECURITY.md](./SECURITY.md).
 
-- [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md): system design
-- [METHODOLOGY.md](./METHODOLOGY.md): scoring model and limits
-- [SECURITY-CISO.md](./SECURITY-CISO.md) and [docs/THREAT-MODEL.md](./docs/THREAT-MODEL.md): security review material
-- [docs/GO-LIVE.md](./docs/GO-LIVE.md): running a baseline and checkpoint for a team
-- [docs/INDEX.md](./docs/INDEX.md): everything else, including specs, the FAQ and share-site details
-- [llms.txt](./llms.txt): a summary for agents
+## License
 
-## Limitations
-
-- The score is heuristic and not yet calibrated against outcomes ([calibration plan](./docs/CALIBRATION-PLAN.md)).
-- Cursor validation commands are not observable in its local database.
-- Git correlation covers the current repository only.
-- There is no central dashboard by design. Aggregation only works on exports that users chose to hand over.
-
-## Contributing and security
-
-See [CONTRIBUTING.md](./CONTRIBUTING.md), [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) and [SUPPORT.md](./SUPPORT.md). Report vulnerabilities privately as described in [SECURITY.md](./SECURITY.md).
+Source-available, not open source (Wonka Audit Commercial Source License). You may install and run the published package for local audits; redistribution, hosted use or modification for third parties needs a written agreement. See [LICENSE](./LICENSE) for the exact terms.

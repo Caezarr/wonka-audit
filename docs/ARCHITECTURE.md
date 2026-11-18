@@ -101,4 +101,4 @@ One run writes one folder: `--out <dir>`, or by default `Desktop/Wonka AI Audit/
 - `npm run lint`: ESLint. `npm run typecheck`: `tsc --noEmit` over JSDoc types (`checkJs`).
 - CI runs tests, `npm pack --dry-run` and a metadata-only smoke run with a privacy assertion on Ubuntu, macOS and Windows for Node 18, 20 and 22, plus one lint and typecheck job.
 
-`scripts/` holds maintainer checks and the optional Python client-delivery builders. None of it ships to npm. See [scripts/README.md](../scripts/README.md).
+`scripts/` holds maintainer checks and the optional Python client-delivery builders. None of it ships to npm. See [scripts/](../scripts/).
