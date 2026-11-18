@@ -10,15 +10,15 @@ Welcome to the wonka-audit documentation. This index groups all operator-facing 
 
 ## Specifications
 
-- [KPI-SPEC.md](../KPI-SPEC.md) — Key performance indicators, dimensions, and scoring components
-- [TECH-SPEC.md](../TECH-SPEC.md) — CLI architecture, collectors, normalization pipeline, and export schema
-- [IMPLEMENTATION-PLAN.md](../IMPLEMENTATION-PLAN.md) — Development roadmap and MVP milestones
-- [REPORT-TEMPLATE.md](../REPORT-TEMPLATE.md) — Client report structure and templating guide
+- [KPI-SPEC.md](KPI-SPEC.md) — Key performance indicators, dimensions, and scoring components
+- [TECH-SPEC.md](TECH-SPEC.md) — CLI architecture, collectors, normalization pipeline, and export schema
+- [IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md) — Development roadmap and MVP milestones
+- [REPORT-TEMPLATE.md](REPORT-TEMPLATE.md) — Client report structure and templating guide
 
 ## Go-Live and Publishing
 
-- [GO-LIVE.md](../GO-LIVE.md) — Pre-training baseline workflow, workshop triggers, and 90-day success criteria
-- [PUBLISH.md](../PUBLISH.md) — npm publishing checklist, trusted publishing setup, and client instructions
+- [GO-LIVE.md](GO-LIVE.md) — Pre-training baseline workflow, workshop triggers, and 90-day success criteria
+- [PUBLISH.md](PUBLISH.md) — npm publishing checklist, trusted publishing setup, and client instructions
 
 ## Security and Compliance
 
@@ -41,7 +41,7 @@ Welcome to the wonka-audit documentation. This index groups all operator-facing 
 
 ## Quick Navigation
 
-**New operators**: Start with [README.md](../README.md), then review [GO-LIVE.md](../GO-LIVE.md).
+**New operators**: Start with [README.md](../README.md), then review [GO-LIVE.md](GO-LIVE.md).
 
 **Security review**: Read [SECURITY-CISO.md](../SECURITY-CISO.md) for compliance and privacy details.
 

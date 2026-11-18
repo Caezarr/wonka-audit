@@ -2,6 +2,7 @@
 import argparse
 import json
 import math
+import os
 from pathlib import Path
 
 from reportlab.lib import colors
@@ -177,7 +178,8 @@ def header_footer(canvas, doc, logo_path):
     canvas.saveState()
     width, height = A4
     if doc.page > 1:
-        canvas.drawImage(str(logo_path), 18 * mm, height - 18 * mm, width=34 * mm, height=7.5 * mm, mask="auto", preserveAspectRatio=True)
+        if logo_path:
+            canvas.drawImage(str(logo_path), 18 * mm, height - 18 * mm, width=34 * mm, height=7.5 * mm, mask="auto", preserveAspectRatio=True)
         canvas.setStrokeColor(LINE)
         canvas.setLineWidth(0.6)
         canvas.line(18 * mm, height - 22 * mm, width - 18 * mm, height - 22 * mm)
@@ -319,7 +321,8 @@ def make_report(audit, compare, logo_path, out_path):
     client = audit.get("org_slug", "Client")
     team = audit.get("team_slug", "All teams")
 
-    story.append(Image(str(logo_path), width=52 * mm, height=11.5 * mm))
+    if logo_path:
+        story.append(Image(str(logo_path), width=52 * mm, height=11.5 * mm))
     story.append(Spacer(1, 22 * mm))
     story.append(Paragraph("AI Usage Audit", ST["title"]))
     story.append(Paragraph("Mesurer l'amélioration réelle de l'usage IA après formation - pas le volume de tokens.", ST["subtitle"]))
@@ -564,13 +567,14 @@ def main():
     parser.add_argument("--input", default="out/wonka-ai-audit-report.json")
     parser.add_argument("--base")
     parser.add_argument("--current")
-    parser.add_argument("--logo", default="/Users/gabriel/Desktop/GR/Vault/Wonka/Offers/Weston-Premium-Woods/_wonka-logo-dark.png")
+    parser.add_argument("--logo", default=os.environ.get("WONKA_AUDIT_LOGO"), help="optional logo image for the report header (or WONKA_AUDIT_LOGO)")
     parser.add_argument("--out", default="output/pdf/wonka-ai-usage-audit-client-report.pdf")
     args = parser.parse_args()
 
     audit = load_json(args.input)
     compare = compare_from_json(args.base, args.current) if args.base and args.current else None
-    make_report(audit, compare, Path(args.logo), Path(args.out))
+    logo = Path(args.logo) if args.logo and Path(args.logo).is_file() else None
+    make_report(audit, compare, logo, Path(args.out))
     print(args.out)
 
 

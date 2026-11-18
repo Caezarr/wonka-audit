@@ -37,7 +37,7 @@ fileCheck("LinkedIn draft exists", "out/linkedin-post.txt", 100);
 fileCheck("Methodology manifest exists", "out/wonka-ai-audit-methodology.json", 100);
 fileCheck("Audit integrity manifest exists", "out/wonka-ai-audit-manifest.json", 100);
 fileCheck("Employee PDF exists", "output/pdf/wonka-ai-usage-audit-premium-report.pdf", 1000);
-fileCheck("Go-live runbook exists", "GO-LIVE.md", 100);
+fileCheck("Go-live runbook exists", "docs/GO-LIVE.md", 100);
 
 console.log("Wonka AI Usage Audit go-live check\n");
 for (const check of checks) {
