@@ -1,6 +1,10 @@
 #!/usr/bin/env node
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { createHash } from "node:crypto";
+// CLI entry point: parses flags and dispatches to one mode.
+// Pipeline: collectors (src/collectors) -> session normalization (src/lib/session.js)
+// -> metrics + score (src/metrics) -> audit export (src/pipeline/build-audit.js)
+// -> renderers (src/reports) written by src/pipeline/write-outputs.js.
+// See docs/ARCHITECTURE.md.
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join, resolve } from "node:path";
 import { parseArgs, printHelp } from "./lib/args.js";
@@ -10,20 +14,17 @@ import { collectClaudeCode } from "./collectors/claude-code.js";
 import { collectCodex } from "./collectors/codex.js";
 import { collectCursor } from "./collectors/cursor.js";
 import { collectGit } from "./collectors/git.js";
-import { buildMetrics, buildScore } from "./metrics/score.js";
-import { buildRecommendations } from "./metrics/recommendations.js";
-import { renderMarkdownReport } from "./reports/markdown.js";
-import { writePdfReport } from "./reports/pdf.js";
-import { renderLinkedInPost } from "./reports/linkedin.js";
-import { renderHtmlReport } from "./reports/html.js";
-import { renderWrappedCardSvg } from "./reports/card-svg.js";
 import { loadAudit, renderComparisonReport } from "./reports/compare.js";
 import { collectSafely } from "./lib/collection.js";
-import { AUDIT_SCHEMA_VERSION, collectorMetadata, methodologyDescriptor } from "./lib/contracts.js";
 import { aggregateAudits, loadAuditDirectory, renderAggregateMarkdown } from "./enterprise/aggregate.js";
-import { buildPublicSharePayload, renderPublicSharePage } from "./reports/public-share.js";
 import { signManifest, verifyManifestSignature } from "./lib/signature.js";
-import { openLocalFile } from "./lib/open.js";
+import { buildAudit } from "./pipeline/build-audit.js";
+import {
+  DEFAULT_OUTPUT_FOLDER,
+  ensureOutputDir,
+  writeAuditArtifacts,
+  writeShareBundle
+} from "./pipeline/write-outputs.js";
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
@@ -102,90 +103,17 @@ async function main() {
     return;
   }
 
-  const sessions = [
-    ...(claude.sessions || []),
-    ...(codex.sessions || []),
-    ...(cursor.sessions || [])
-  ];
-  const metrics = buildMetrics({ sessions, git });
-  const score = buildScore(metrics);
-  const recommendations = buildRecommendations(metrics, score);
-  const audit = {
-    schema_version: AUDIT_SCHEMA_VERSION,
-    generated_at: new Date().toISOString(),
-    org_slug: args.org,
-    participant_hash: participantHash || undefined,
-    team_slug: args.team || undefined,
-    period: args.period,
-    training_date: args.trainingDate || undefined,
-    collection_window: {
-      start: iso(window.start),
-      end: iso(window.end)
-    },
-    privacy: {
-      content_uploaded: false,
-      examples_included: false,
-      hashing: "sha256_with_ephemeral_audit_salt",
-      local_content_inspection: context.contentInspection,
-      raw_content_exported: false
-    },
-    methodology: methodologyDescriptor({ contentInspection: context.contentInspection }),
-    collectors: {
-      claude_code: collectorMetadata(claude),
-      codex: collectorMetadata(codex),
-      cursor: collectorMetadata(cursor),
-      git: collectorMetadata(git)
-    },
-    source_coverage: {
-      claude_code: coverage(claude),
-      cursor: coverage(cursor),
-      codex: coverage(codex),
-      git: {
-        status: git.status,
-        repos_detected: git.repos_detected || 0,
-        commits_in_window: git.commits_in_window || 0
-      }
-    },
-    metrics,
-    score,
-    recommendations
-  };
+  const audit = buildAudit({
+    results: { claude, codex, cursor, git },
+    window,
+    args,
+    contentInspection: context.contentInspection,
+    participantHash
+  });
 
   const outDir = ensureOutputDir(args, window);
-  const jsonPath = resolve(outDir, "wonka-ai-audit-report.json");
-  const htmlPath = resolve(outDir, "index.html");
-  const markdownPath = resolve(outDir, "wonka-ai-audit-report.md");
-  const pdfPath = resolve(outDir, "wonka-ai-usage-audit.pdf");
-  const cardPath = resolve(outDir, "wonka-ai-wrapped-card.svg");
-  const linkedinPath = resolve(outDir, "linkedin-post.txt");
-  const methodologyPath = resolve(outDir, "wonka-ai-audit-methodology.json");
-  const manifestPath = resolve(outDir, "wonka-ai-audit-manifest.json");
-  writeFileSync(jsonPath, JSON.stringify(audit, null, 2));
-  writeFileSync(htmlPath, renderHtmlReport(audit));
-  writeFileSync(markdownPath, renderMarkdownReport(audit));
-  writeFileSync(cardPath, renderWrappedCardSvg(audit));
-  writeFileSync(linkedinPath, renderLinkedInPost(audit));
-  writeFileSync(methodologyPath, JSON.stringify({
-    schema_version: audit.schema_version,
-    methodology: audit.methodology,
-    collectors: audit.collectors,
-    collection_window: audit.collection_window,
-    privacy: audit.privacy,
-    source_coverage: audit.source_coverage
-  }, null, 2));
-  writePdfReport(audit, pdfPath);
-  const artifactPaths = [jsonPath, htmlPath, markdownPath, pdfPath, cardPath, linkedinPath, methodologyPath];
-  writeFileSync(manifestPath, JSON.stringify({
-    manifest_version: "1.0",
-    generated_at: audit.generated_at,
-    schema_version: audit.schema_version,
-    comparability_key: audit.methodology.comparability_key,
-    privacy: audit.privacy,
-    artifacts: artifactPaths.map((path) => ({
-      name: path.split("/").pop(),
-      sha256: createHash("sha256").update(readFileSync(path)).digest("hex")
-    }))
-  }, null, 2));
+  const { jsonPath, htmlPath, pdfPath, cardPath, linkedinPath, methodologyPath, manifestPath } =
+    writeAuditArtifacts(audit, outDir);
   if (args.signPrivateKey) {
     const signaturePath = resolve(outDir, "wonka-ai-audit-manifest.signature.json");
     writeFileSync(signaturePath, JSON.stringify(signManifest(manifestPath, resolve(args.signPrivateKey)), null, 2));
@@ -200,33 +128,7 @@ async function main() {
   console.log(`Data export: ${jsonPath}`);
   console.log(`Methodology: ${methodologyPath}`);
   console.log(`Manifest: ${manifestPath}`);
-  console.log(`AI Practice Score: ${score.ai_practice_score}/100`);
-}
-
-function writeShareBundle(audit, outDir, shareUrl, noOpen = false) {
-  if (!existsSync(outDir)) mkdirSync(outDir, { recursive: true });
-  writeFileSync(resolve(outDir, "index.html"), renderPublicSharePage(audit, { shareUrl: shareUrl || "" }));
-  writeFileSync(resolve(outDir, "share-card.svg"), renderWrappedCardSvg(audit));
-  writeFileSync(resolve(outDir, "public-share.json"), JSON.stringify(buildPublicSharePayload(audit), null, 2));
-  const pagePath = resolve(outDir, "index.html");
-  console.log(`Share preview: ${pagePath}`);
-  console.log("Only the public recap is included; private audit details stay outside this folder.");
-  console.log("Local preview only: no public URL has been created yet.");
-  if (!noOpen && process.stdout.isTTY && !process.env.CI) {
-    console.log("Opening the preview in your browser...");
-    openLocalFile(pagePath);
-  }
-}
-
-function coverage(result) {
-  return {
-    status: result.status,
-    sessions_detected: result.sessions?.length || 0,
-    files_scanned: result.files_scanned,
-    reason: result.reason,
-    capabilities: result.capabilities || {},
-    warnings: result.warnings || []
-  };
+  console.log(`AI Practice Score: ${audit.score.ai_practice_score}/100`);
 }
 
 function printPreview({ claude, codex, cursor, git, window }) {
@@ -240,54 +142,9 @@ function printPreview({ claude, codex, cursor, git, window }) {
   console.log(`Git:         ${git.status} (${git.commits_in_window || 0} commits in window)`);
 }
 
-function resolveOutputDir(args, window) {
-  if (args.out) return resolve(args.out);
-  const desktop = join(homedir(), "Desktop");
-  const root = existsSync(desktop) ? join(desktop, "Wonka AI Audit") : resolve("Wonka AI Audit");
-  return join(root, runFolderName(args, window));
-}
-
-function ensureOutputDir(args, window) {
-  const preferred = resolveOutputDir(args, window);
-  try {
-    if (!existsSync(preferred)) mkdirSync(preferred, { recursive: true });
-    return preferred;
-  } catch (error) {
-    if (args.out) throw error;
-    const fallback = resolve("Wonka AI Audit", runFolderName(args, window));
-    if (!existsSync(fallback)) mkdirSync(fallback, { recursive: true });
-    console.log(`Desktop output unavailable; using ${fallback}`);
-    return fallback;
-  }
-}
-
-function runFolderName(args, window) {
-  const label = sanitizePathPart(args.runLabel || args.period || "audit");
-  const start = datePart(window.start);
-  const end = datePart(window.end);
-  const generated = dateTimePart(new Date());
-  return `${label}_${start}_to_${end}_${generated}`;
-}
-
-function sanitizePathPart(value) {
-  return String(value || "audit")
-    .toLowerCase()
-    .replace(/[^a-z0-9._-]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 60) || "audit";
-}
-
-function datePart(date) {
-  return date.toISOString().slice(0, 10);
-}
-
-function dateTimePart(date) {
-  return date.toISOString().slice(0, 16).replace(/[:T]/g, "-");
-}
-
 function printClientNotice(args) {
   if (args.preview) return;
-  const defaultTarget = args.out ? resolve(args.out) : join(homedir(), "Desktop", "Wonka AI Audit", "<run-folder>");
+  const defaultTarget = args.out ? resolve(args.out) : join(homedir(), "Desktop", DEFAULT_OUTPUT_FOLDER, "<run-folder>");
   console.log("Wonka AI Usage Audit");
   console.log("Runs locally on this computer. No prompts, source code, secrets or raw conversations are uploaded.");
   console.log(args.noContent
