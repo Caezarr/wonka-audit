@@ -4,6 +4,11 @@ on:
   release:
     types: [published]
 
+# Never run two publishes at once, and never cancel one mid-publish.
+concurrency:
+  group: publish-npm
+  cancel-in-progress: false
+
 permissions:
   contents: read
   id-token: write
